@@ -12,12 +12,13 @@ const files = [
   "LICENSE",
 ];
 const check = process.argv.includes("--check");
+const canonicalText = (path) => readFileSync(path, "utf8").replaceAll("\r\n", "\n");
 
 for (const relativePath of files) {
   const sourcePath = resolve(source, relativePath);
   const targetPath = resolve(target, relativePath);
   if (check) {
-    if (!existsSync(targetPath) || !readFileSync(sourcePath).equals(readFileSync(targetPath))) {
+    if (!existsSync(targetPath) || canonicalText(sourcePath) !== canonicalText(targetPath)) {
       throw new Error(`WorkBuddy 插件内的 ${relativePath} 与主版本不一致；请运行 node scripts/sync-workbuddy.mjs`);
     }
   } else {
