@@ -26,7 +26,7 @@ codex plugin add shendumao-context-map@shendumao
 codex plugin list
 ```
 
-也可以在 Codex 桌面版的插件目录中选择 `Shendumao` 来源，再安装 `神都猫脉络`。安装后**完全退出并重新打开 Codex，创建一个新任务**，让新任务加载插件的技能与 MCP 工具。
+也可以在 Codex 桌面版的插件目录中选择 `神都猫` 来源，再安装 `神都猫脉络`。安装后**完全退出并重新打开 Codex，创建一个新任务**，让新任务加载插件的技能与 MCP 工具。
 
 可用这句话开始：
 
@@ -86,4 +86,4 @@ QQ 交流群：**340983417**。欢迎反馈安装问题、地图体验与功能�
 
 ## 许可
 
-[MIT](plugins/shendumao-context-map/LICENSE) · 作者：神都猫
+[MIT](LICENSE) · 作者：神都猫

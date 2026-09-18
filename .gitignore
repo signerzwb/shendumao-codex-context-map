@@ -1,6 +1,7 @@
 **/node_modules/
 **/.npm-cache/
 .validation-deps/
+.install-smoke/
 **/.DS_Store
 *.log
 *.tmp
