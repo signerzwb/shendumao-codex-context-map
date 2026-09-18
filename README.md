@@ -27,7 +27,13 @@ Codex 版已完成跨平台安装测试；现另提供 **WorkBuddy 试用适配�
 
 ## WorkBuddy 安装试用（Windows / macOS）
 
-在 WorkBuddy 的「插件」页添加第三方市场 `https://github.com/signerzwb/shendumao-codex-context-map`，从 `shendumao-workbuddy` 来源安装 `shendumao-context-map`。安装后先请它调用 `render_context_map` 打开虚构演示图，确认 MCP 工具和交互画布是否都出现。具体按钮、备用 MCP 配置和问题反馈方法见 [WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md)。
+**推荐先在 WorkBuddy 对话中发安装请求**，让它检查仓库和本机环境，并在其权限范围内尝试安装：
+
+> 请帮我安装这个 WorkBuddy 插件：https://github.com/signerzwb/shendumao-codex-context-map 。先阅读仓库里的 WorkBuddy 试用说明，核对插件来源、安装内容和 Node.js 要求；如果你能管理插件市场，就添加这个仓库并安装 `shendumao-context-map@shendumao-workbuddy`。需要我确认权限或在界面中操作时请明确指出，不要假装已经安装成功。完成后告诉我是否需要重启或新建任务，并验证 `render_context_map` 是否可用。
+
+这是一条交给 WorkBuddy 执行的任务，**不是已确认的“粘贴链接自动安装”内置功能**。如果当前版本不能从对话管理插件，请按 [WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md) 在「插件」页添加第三方市场并安装；该文档也有备用 MCP 配置和测试步骤。
+
+在中国大陆网络下访问 GitHub 不稳定时，[WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md#github-访问不畅时的对话指令)还提供了第三方加速链接和对应的对话指令。它只作为下载备用，不是项目官方发布地址；优先使用原始 GitHub 仓库。
 
 WorkBuddy 适配目前是**宿主待验证版**：不能把 Codex 的安装命令直接复制到 WorkBuddy，也不能保证你的 WorkBuddy 版本支持 MCP Apps 画布。
 
