@@ -17,6 +17,16 @@
 
 先安装 Codex 和 **Node.js 18 或更高版本**，并确认终端可以运行 `codex --version` 与 `node --version`。本仓库已经提交运行用的单文件服务包与网页资源，普通安装无需执行 `npm install`、`npm run build`，也不需要单独启动服务。
 
+### 推荐：把仓库地址交给 Codex 安装
+
+在要使用插件的电脑上，打开具有本机终端和网络访问能力的 Codex 任务，发送：
+
+> 请帮我安装这个 Codex 插件：https://github.com/signerzwb/shendumao-codex-context-map 。先阅读仓库 README，检查 Node.js 和 Codex 是否可用，再按 README 中的 GitHub marketplace 步骤安装并验证结果。需要执行命令或联网授权时请让我确认；不要运行仓库以外的安装脚本。最后告诉我是否需要重启 Codex。
+
+这不是“只粘贴链接就自动安装”的特殊功能；Codex 仍需按以下步骤执行命令，且可能受本机权限、网络或组织策略限制。如果当前任务没有终端能力，使用下面的手动方式。
+
+### 手动安装
+
 在 PowerShell（Windows）或 Terminal（macOS）中运行：
 
 ```sh
