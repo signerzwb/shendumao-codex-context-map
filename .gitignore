@@ -1,0 +1,8 @@
+**/node_modules/
+**/.npm-cache/
+.validation-deps/
+**/.DS_Store
+*.log
+*.tmp
+.idea/
+.vscode/

@@ -1,0 +1,20 @@
+{
+  "name": "shendumao",
+  "interface": {
+    "displayName": "神都猫"
+  },
+  "plugins": [
+    {
+      "name": "shendumao-context-map",
+      "source": {
+        "source": "local",
+        "path": "./plugins/shendumao-context-map"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

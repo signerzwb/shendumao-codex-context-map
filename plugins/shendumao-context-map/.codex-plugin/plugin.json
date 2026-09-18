@@ -1,0 +1,40 @@
+{
+  "name": "shendumao-context-map",
+  "version": "0.2.0",
+  "description": "把长期对话与规划持久整理为可追溯、可增量编辑和回看版本的思路地图。",
+  "author": {
+    "name": "神都猫"
+  },
+  "homepage": "https://github.com/signerzwb/shendumao-codex-context-map",
+  "repository": "https://github.com/signerzwb/shendumao-codex-context-map",
+  "license": "MIT",
+  "keywords": [
+    "thought-map",
+    "conversation-map",
+    "mind-map",
+    "codex",
+    "planning"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "神都猫脉络",
+    "shortDescription": "持久梳理对话脉络，增量编辑并回看版本",
+    "longDescription": "神都猫脉络把对话中的初始目标、主题分支、转折、决定、约束与未完成事项持久保存为结构化地图，并在 Codex 中提供增量编辑、版本回看、来源标注以及可缩放、可切换方向的交互画布。用户原文保持原语言；插件不会在未经宿主授权时自动读取其他任务历史。",
+    "developerName": "神都猫",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "把当前对话整理成一张脉络图",
+      "继续更新这张脉络图，保留来源和修改原因",
+      "查看这张脉络图的版本变化"
+    ],
+    "brandColor": "#2B8277",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
+  },
+  "mcpServers": "./.mcp.json"
+}

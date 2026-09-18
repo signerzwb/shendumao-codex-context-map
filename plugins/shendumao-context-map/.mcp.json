@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "shendumaoContextMap": {
+      "title": "神都猫脉络",
+      "description": "把对话和规划持久整理为可增量编辑、可回看版本的结构化思路地图。",
+      "cwd": ".",
+      "command": "node",
+      "args": [
+        "./mcp/server.bundle.mjs"
+      ]
+    }
+  }
+}

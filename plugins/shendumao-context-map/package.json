@@ -1,0 +1,19 @@
+{
+  "name": "shendumao-context-map-plugin",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "神都猫脉络 Codex 插件的持久地图、增量编辑、版本回看与本地 MCP UI。",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "start": "node mcp/server.bundle.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

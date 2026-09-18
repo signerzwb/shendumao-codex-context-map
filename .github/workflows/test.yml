@@ -1,0 +1,30 @@
+name: Test plugin
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  plugin:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        node: [22]
+    defaults:
+      run:
+        working-directory: plugins/shendumao-context-map
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: plugins/shendumao-context-map/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - name: Check committed runtime bundle
+        shell: bash
+        run: git diff --exit-code -- mcp/server.bundle.mjs
