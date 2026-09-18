@@ -6,6 +6,7 @@
   "description": "神都猫脉络 Codex 插件的持久地图、增量编辑、版本回看与本地 MCP UI。",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:demo": "node scripts/build-demo.mjs",
     "test": "node --test tests/*.test.mjs",
     "start": "node mcp/server.bundle.mjs"
   },

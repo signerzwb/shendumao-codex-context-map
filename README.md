@@ -4,6 +4,18 @@
 
 这是一个 **Codex 本地插件**，不是需要常驻网页服务器的 SaaS。Codex 启动插件内的 stdio MCP 服务，并显示打包在插件内的交互界面；正常使用不需要访问 `127.0.0.1`。
 
+## 界面预览与演示
+
+以下图片由插件的实际地图组件和**虚构演示数据**生成，不含真实对话；可看到主题分叉、跨主题关联和阶段落点。
+
+![浅色纵向地图总览](docs/screenshots/overview-light.png)
+
+| 横向布局与深色风格 | 点击节点查看决定原因 |
+| --- | --- |
+| ![深色横向地图](docs/screenshots/overview-dark-horizontal.png) | ![节点详情与决定原因](docs/screenshots/node-detail.png) |
+
+想自己试用交互，可下载 [独立 HTML 演示页](docs/demo.html)（在 GitHub 文件页点 **Raw**，保存为 `demo.html` 后用浏览器打开）。它无需安装插件或启动服务，支持切换布局/风格、缩放和查看节点详情；演示数据只读，不能读取 Codex 对话，也不会保存地图。真正的创建、增量更新和持久化需要安装插件。
+
 ## 能做什么
 
 - 从当前可见对话或用户提供的规划创建地图；按问题分出多个顶层主题，而不是机械地按消息顺序排列。
@@ -85,6 +97,8 @@ npm test
 ```
 
 代码更改后要重新构建并提交 `mcp/server.bundle.mjs`；仅修改源码而不更新 bundle，不会改变用户安装后的实际服务。GitHub Actions 在 Windows 和 macOS 上运行构建与测试。发布更新时同步提升插件版本，并在另一台机器重新执行 marketplace upgrade / plugin add。
+
+如修改了地图组件或虚构演示数据，运行 `npm run build:demo` 重新生成 `docs/demo.html`，并检查预览图是否需要更新。
 
 ## 隐私与来源
 

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>神都猫脉络</title>
+<style>
+:root{color-scheme:light;--bg:#f4f7f6;--grid:#c9d8d433;--surface:#fff;--surface-2:#edf5f3;--text:#1d2927;--muted:#697875;--border:#d7e2df;--line:#83aaa1;--accent:#267c73;--accent-2:#4da397;--shadow:0 12px 34px #17352f17;--danger:#b64c4c}
+:root[data-theme=dark]{color-scheme:dark;--bg:#0c1214;--grid:#71888430;--surface:#151d20;--surface-2:#172925;--text:#edf7f4;--muted:#92aaa5;--border:#2a3b3d;--line:#52766f;--accent:#60c8b8;--accent-2:#8bd8cc;--shadow:0 16px 42px #0007}
+:root[data-theme=ocean]{color-scheme:dark;--bg:#07191d;--grid:#5b969d2d;--surface:#0d252a;--surface-2:#12343a;--text:#e7f7f7;--muted:#86aeb2;--border:#21454a;--line:#4b8c8d;--accent:#68cbc5;--accent-2:#9be1d7;--shadow:0 16px 42px #00101499}
+:root[data-theme=paper]{color-scheme:light;--bg:#f3eee3;--grid:#9a85682c;--surface:#fffaf0;--surface-2:#f3ead8;--text:#332f28;--muted:#7f7160;--border:#ddd0bb;--line:#b59b73;--accent:#8d6a37;--accent-2:#b58a4a;--shadow:0 12px 34px #4a382218}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}button,select{font:inherit;color:inherit}.app{height:100%;display:grid;grid-template-rows:auto 1fr;min-height:430px}.toolbar{position:relative;z-index:10;display:grid;grid-template-columns:minmax(160px,1fr) auto;gap:8px 14px;align-items:center;padding:9px 12px;background:color-mix(in srgb,var(--surface) 94%,transparent);border-bottom:1px solid var(--border);box-shadow:0 2px 15px #12231e0b}.brand{display:flex;align-items:center;gap:9px;min-width:0}.mark{display:grid;place-items:center;width:28px;height:28px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));border-radius:9px;background:var(--surface-2);color:var(--accent);font-size:19px}.brand-copy{min-width:0}.brand strong,.brand small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.brand strong{font-size:14px}.brand small{font-size:11px;color:var(--muted)}.tools{display:flex;align-items:center;justify-content:flex-end;gap:5px;white-space:nowrap}.tools button,.tools select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:4px 8px;font-size:12px}.tools button:hover,.tools select:hover{border-color:var(--accent)}.tools button:focus-visible,.tools select:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.stat{padding:3px 7px;border-radius:999px;background:var(--surface-2);color:var(--accent);font-size:11px}.viewport{position:relative;min-height:0;overflow:hidden;background-color:var(--bg);background-image:radial-gradient(circle,var(--grid) 1px,transparent 1.3px);background-size:20px 20px;touch-action:none;cursor:grab}.viewport.dragging{cursor:grabbing}.world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}.edges{position:absolute;left:0;top:0;overflow:visible;color:var(--line)}.edge{fill:none;stroke:currentColor;stroke-width:1.7;opacity:.62}.edge.lit{stroke:var(--accent);stroke-width:2.8;opacity:1}.card{position:absolute;display:block;overflow:hidden;border:1px solid var(--border);border-top:3px solid var(--lane,var(--accent));border-radius:11px;background:var(--surface);box-shadow:var(--shadow);padding:10px 12px;text-align:left;color:var(--text)}button.card{cursor:pointer}.card:hover{border-color:color-mix(in srgb,var(--lane,var(--accent)) 65%,var(--border));transform:translateY(-1px)}.card.selected{outline:2px solid var(--accent);outline-offset:2px}.card.root{background:linear-gradient(145deg,var(--surface),var(--surface-2));border-color:color-mix(in srgb,var(--accent) 45%,var(--border));padding:12px 15px}.card.topic{background:color-mix(in srgb,var(--surface-2) 70%,var(--surface));box-shadow:none}.meta{display:flex;align-items:center;gap:6px;min-width:0;margin-bottom:6px;color:var(--lane,var(--accent));font-size:10px;font-weight:650;letter-spacing:.04em}.meta .speaker{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-weight:450;letter-spacing:0}.meta time{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:450;letter-spacing:0}.card strong{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:14px;line-height:1.45}.card.root strong{font-size:16px}.card .summary{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}.world.distant .card .summary,.world.distant .meta .speaker,.world.distant .meta time{display:none}.controls{position:absolute;z-index:8;right:12px;bottom:12px;display:flex;align-items:center;gap:2px;padding:4px;border:1px solid var(--border);border-radius:10px;background:color-mix(in srgb,var(--surface) 94%,transparent);box-shadow:var(--shadow)}.controls button{height:28px;min-width:30px;border:0;border-radius:7px;background:transparent}.controls button:hover{background:var(--surface-2)}.controls output{min-width:48px;text-align:center;color:var(--muted);font-size:11px}.inspector{position:absolute;z-index:9;right:12px;top:12px;width:min(350px,calc(100% - 24px));max-height:calc(100% - 66px);overflow:auto;border:1px solid var(--border);border-radius:13px;background:color-mix(in srgb,var(--surface) 97%,transparent);box-shadow:0 22px 60px #102a2550;padding:14px}.inspector[hidden]{display:none}.inspector-head{display:flex;align-items:center;gap:7px}.inspector-head .kind{padding:2px 7px;border-radius:999px;background:var(--surface-2);color:var(--accent);font-size:11px}.inspector-head .date{color:var(--muted);font-size:11px}.inspector-head button{margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:20px}.inspector h2{margin:10px 0 12px;font-size:18px;line-height:1.45}.field{padding-top:9px;margin-top:9px;border-top:1px solid var(--border)}.field label{display:block;margin-bottom:3px;color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.field p,.field blockquote{margin:0;white-space:pre-wrap}.field p{font-size:13px}.field blockquote{padding:9px 11px;border-left:2px solid var(--accent);background:var(--surface-2);border-radius:0 8px 8px 0;color:var(--muted);font-size:12px}.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}.toast{position:absolute;z-index:12;left:50%;bottom:16px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:8px 12px;border-radius:9px;background:var(--text);color:var(--surface);font-size:12px;box-shadow:var(--shadow)}.toast:empty{display:none}
+.edge.related{stroke-dasharray:8 6;opacity:.78}.card.end{background:linear-gradient(145deg,var(--surface),var(--surface-2));border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}.empty{padding:24px;text-align:center}.empty[hidden]{display:none}.empty.error{color:var(--danger)}
+.save-state{min-width:42px;color:var(--muted);font-size:10px;text-align:center}.save-state.saving{color:var(--accent)}.save-state.error{color:var(--danger)}.inspector-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px;padding-top:11px;border-top:1px solid var(--border)}.inspector-actions button{border:1px solid var(--border);border-radius:7px;background:var(--surface);padding:5px 8px;font-size:11px}.inspector-actions button:hover{border-color:var(--accent)}.inspector-actions .danger{color:var(--danger)}.context-menu{position:absolute;z-index:25;display:flex;flex-direction:column;width:178px;padding:6px;border:1px solid var(--border);border-radius:10px;background:var(--surface);box-shadow:0 18px 48px #07181555}.context-menu[hidden]{display:none}.context-menu button{border:0;border-radius:6px;background:transparent;padding:7px 9px;text-align:left;font-size:12px}.context-menu button:hover{background:var(--surface-2)}.context-menu .danger{color:var(--danger)}dialog{width:min(440px,calc(100% - 28px));border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);box-shadow:0 24px 72px #07181577;padding:0}dialog::backdrop{background:#0b171760;backdrop-filter:blur(2px)}.dialog-form{padding:18px}.dialog-form h2{margin:0 0 5px;font-size:18px}.dialog-form>p{margin:0 0 13px;color:var(--muted);font-size:12px}.dialog-form textarea{display:block;width:100%;min-height:120px;resize:vertical;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);padding:10px 11px;font:13px/1.6 inherit}.dialog-form textarea:focus{outline:2px solid var(--accent);outline-offset:1px}.dialog-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:14px}.dialog-actions button{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:7px 12px}.dialog-actions .primary{border-color:var(--accent);background:var(--accent);color:var(--surface)}
+@media(max-width:700px){.toolbar{grid-template-columns:1fr;padding:7px 9px}.tools{justify-content:flex-start;overflow-x:auto;padding-bottom:1px}.brand small{display:none}.inspector{top:auto;bottom:52px;max-height:48%;}.stat{display:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="toolbar">
+    <div class="brand"><span class="mark" aria-hidden="true">⑂</span><span class="brand-copy"><strong id="brand-name">神都猫脉络</strong><small id="map-title">思路地图</small></span><span class="stat" id="stats"></span></div>
+    <nav class="tools" aria-label="地图工具">
+      <span class="save-state" id="save-state"></span>
+      <button id="add-node" type="button">加节点</button>
+      <button id="direction" type="button">横向</button>
+      <button id="fit" type="button">全图</button>
+      <button id="display-mode" type="button">展开</button>
+      <select id="theme" aria-label="风格"><option value="light">雾白</option><option value="dark">墨黑</option><option value="ocean">深海</option><option value="paper">暖纸</option></select>
+      <button id="export" type="button">导出</button>
+      <button id="language" type="button">EN</button>
+    </nav>
+  </header>
+  <section class="viewport" id="viewport" aria-label="可拖动缩放的思路地图">
+    <div class="world" id="world"></div>
+    <div class="empty" id="empty">正在等待地图数据…</div>
+    <aside class="inspector" id="inspector" hidden></aside>
+    <div class="context-menu" id="context-menu" hidden>
+      <button type="button" data-menu-action="edit">编辑节点</button>
+      <button type="button" data-menu-action="add">在后面加节点</button>
+      <button type="button" class="danger" data-menu-action="delete">删除节点</button>
+    </div>
+    <div class="controls"><button id="zoom-out" type="button" aria-label="缩小">−</button><output id="zoom-label">100%</output><button id="zoom-in" type="button" aria-label="放大">＋</button><button id="fit-bottom" type="button">全图</button></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </section>
+</main>
+<dialog id="node-dialog">
+  <form class="dialog-form" id="node-form">
+    <h2 id="node-dialog-title">编辑节点</h2>
+    <p id="node-dialog-help">第一行作为标题，其余内容作为说明。Codex 仍可理解这段自然语言。</p>
+    <textarea id="node-content" maxlength="1400" required></textarea>
+    <div class="dialog-actions"><button type="button" id="node-cancel">取消</button><button type="submit" class="primary" id="node-submit">保存</button></div>
+  </form>
+</dialog>
+<dialog id="delete-dialog">
+  <form class="dialog-form" id="delete-form">
+    <h2 id="delete-dialog-title">删除这个节点？</h2>
+    <p id="delete-dialog-help">会保存为一个新版本，旧版本仍可回看。</p>
+    <div class="dialog-actions"><button type="button" id="delete-cancel">取消</button><button type="submit" class="primary" id="delete-submit">删除</button></div>
+  </form>
+</dialog>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const theme = params.get("theme");
+  const direction = params.get("direction");
+  if (["light", "dark", "ocean", "paper"].includes(theme) || ["vertical", "horizontal"].includes(direction)) {
+    sessionStorage.setItem("shendumao-context-map-view", JSON.stringify({
+      theme: ["light", "dark", "ocean", "paper"].includes(theme) ? theme : "light",
+      direction: direction === "horizontal" ? "horizontal" : "vertical",
+      language: "zh",
+    }));
+  }
+  addEventListener("load", () => {
+    const focus = params.get("focus");
+    if (focus) setTimeout(() => {
+      const node = [...document.querySelectorAll("[data-node-id]")].find((item) => item.dataset.nodeId === focus);
+      node?.click();
+    }, 100);
+  });
+})();
+</script>
+<script>
+(() => {
+  "use strict";
+  const fallbackPayload = {"kind":"map","schemaVersion":2,"status":"ready","mapId":"demo","revision":0,"title":"阅读计划怎样长成产品路线","origin":"想让读过的内容真正留下来","stats":{"topics":3,"nodes":6},"map":{"title":"阅读计划怎样长成产品路线","origin":"想让读过的内容真正留下来","kind":"虚构演示","description":"这是虚构示例，用于展示一个想法如何分叉、调整并汇合。","compass":"先验证核心价值，再扩展功能。","end":"确定第一版的验收范围","dateRange":"26-09-01—06","topics":[{"id":"need","title":"从模糊需求到真正问题","description":"先弄清楚用户需要回忆什么。","nodes":[{"id":"need-1","title":"读完后容易忘记要点","kind":"起点","summary":"长篇笔记难以重新阅读。","why":"信息按时间堆积，缺少主题联系。","change":"把笔记改为可回看的主题卡片。","speaker":"虚构用户","date":"26-09-01"},{"id":"need-2","title":"先解决回想，而非收集","kind":"转折","summary":"第一版聚焦找回关键想法。","why":"增加收藏入口并不能保证理解。","change":"优先做主题关联与简短回顾。","speaker":"虚构团队","date":"26-09-02"}]},{"id":"design","title":"交互方案","description":"探索怎样让脉络容易阅读。","nodes":[{"id":"design-1","title":"卡片之间可以分支","kind":"方案","summary":"不同主题分别展开，也能相互关联。","why":"单一列表看不到思路的变化。","change":"支持横向与纵向查看。","speaker":"虚构团队","date":"26-09-03"},{"id":"design-2","title":"减少第一版的输入负担","kind":"决定","summary":"新增节点只需写一段话。","why":"过多必填字段会阻碍记录。","change":"高级属性保持可选。","speaker":"虚构团队","date":"26-09-04"}]},{"id":"delivery","title":"发布与验收","description":"把分支讨论收束为可验证的交付。","nodes":[{"id":"delivery-1","title":"先完成可用的本地版本","kind":"实现","summary":"保存卡片、查看关系、回看修改。","why":"先验证是否真正帮助回想。","change":"暂缓多人协作与云同步。","speaker":"虚构团队","date":"26-09-05","related":"design-2"},{"id":"delivery-2","title":"以找回决定理由为验收点","kind":"验收","summary":"隔一段时间仍能看懂为什么这样做。","why":"这比节点数量更接近产品目标。","change":"用真实使用反馈决定下一步。","speaker":"虚构团队","date":"26-09-06","related":"need-2"}]}]}};
+  const palette = ["#526ec1", "#318878", "#a37337", "#8664a7", "#b45f76", "#477f9d", "#7d8242", "#9a6554"];
+  const messages = {
+    zh: { brand:"神都猫脉络", map:"思路地图", horizontal:"横向", vertical:"纵向", fit:"全图", fullscreen:"展开", inline:"收起", end:"阶段落点", style:"风格", export:"导出", addNode:"加节点", waiting:"正在等待地图数据…", topics:"{topics} 个主题 · {nodes} 个节点 · v{revision}", why:"为什么走到这里", change:"改变了什么", source:"原话与上下文", summary:"整理摘要", close:"关闭", edit:"编辑", addAfter:"在后面添加", remove:"删除", editTitle:"编辑节点", addTitle:"添加节点", editorHelp:"第一行作为标题，其余内容作为说明。Codex 仍可理解这段自然语言。", cancel:"取消", save:"保存", deleteTitle:"删除这个节点？", deleteHelp:"若其他节点指向它，这些关联线也会一并清除；操作会保存为新版本，旧版本仍可回看。", deleteAction:"删除", saving:"保存中…", saved:"已保存", saveFailed:"保存失败", conflict:"地图已有更新，已重新载入最新版；请再次修改。", demoReadOnly:"演示图只读，请先让 Codex 整理并保存一张地图。", selectFirst:"请先选择一个节点。", nodeAdded:"节点已添加并保存。", nodeUpdated:"节点已更新并保存。", nodeRemoved:"节点已删除；旧版本仍保留。", toolUnavailable:"当前宿主尚未开放插件内编辑工具。", exported:"已向宿主请求保存 JSON。", exportFallback:"已尝试浏览器下载；若未出现保存提示，可让 Codex 调用 get_context_map。", exportFailed:"当前宿主未允许下载，可让 Codex 调用 get_context_map 获取结构。", displayUnavailable:"当前宿主未提供展开模式。", themes:{light:"雾白",dark:"墨黑",ocean:"深海",paper:"暖纸"}, aria:"可拖动缩放的思路地图", zoomOut:"缩小",zoomIn:"放大" },
+    en: { brand:"Shendumao Context Map", map:"Thought map", horizontal:"Horizontal", vertical:"Vertical", fit:"Fit", fullscreen:"Fullscreen", inline:"Inline", end:"Current point", style:"Style", export:"Export", addNode:"Add node", waiting:"Waiting for map data…", topics:"{topics} topics · {nodes} nodes · v{revision}", why:"Why this turn", change:"What changed", source:"Original context", summary:"Summary", close:"Close", edit:"Edit", addAfter:"Add after", remove:"Delete", editTitle:"Edit node", addTitle:"Add node", editorHelp:"The first line is the title; the rest is the note. Codex can interpret natural language.", cancel:"Cancel", save:"Save", deleteTitle:"Delete this node?", deleteHelp:"Any links from other nodes to this one will also be removed. The change creates a new revision; the previous version remains available.", deleteAction:"Delete", saving:"Saving…", saved:"Saved", saveFailed:"Save failed", conflict:"A newer revision was loaded. Please apply the edit again.", demoReadOnly:"The demo is read-only. Ask Codex to prepare and save a map first.", selectFirst:"Select a node first.", nodeAdded:"Node added and saved.", nodeUpdated:"Node updated and saved.", nodeRemoved:"Node deleted. The previous revision is still available.", toolUnavailable:"This host does not expose in-widget editing tools yet.", exported:"Asked the host to save the JSON file.", exportFallback:"Tried a browser download. If no save prompt appears, ask Codex to call get_context_map.", exportFailed:"Downloads are unavailable here. Ask Codex to call get_context_map for the structure.", displayUnavailable:"This host does not offer fullscreen mode.", themes:{light:"Mist",dark:"Ink",ocean:"Ocean",paper:"Paper"}, aria:"Draggable and zoomable thought map", zoomOut:"Zoom out",zoomIn:"Zoom in" }
+  };
+  const $ = (id) => document.getElementById(id);
+  function readViewState(){try{return window.openai?.widgetState?.shendumaoContextMap||JSON.parse(sessionStorage.getItem("shendumao-context-map-view")||"{}")||{}}catch{return {}}}
+  const savedView=readViewState(),hostLocale=window.openai?.locale||document.documentElement.lang||"";
+  const state = { payload:null, direction:savedView.direction==="horizontal"?"horizontal":"vertical", theme:["light","dark","ocean","paper"].includes(savedView.theme)?savedView.theme:"light", language:savedView.language==="en"||(!savedView.language&&hostLocale.toLowerCase().startsWith("en"))?"en":"zh", selected:null, editorMode:null, contextNodeId:null, deleteNodeId:null, saving:false, camera:{x:0,y:0,scale:1}, size:{width:900,height:650}, userCamera:false };
+  let displayMode=window.openai?.displayMode||"inline",bridgeConnected=false,rpcId=0;
+  const pendingRequests=new Map();
+  let toastTimer = 0;
+  const t = (key, vars={}) => {
+    let value = messages[state.language][key] ?? key;
+    Object.entries(vars).forEach(([name,replacement]) => value = value.replace(`{${name}}`, String(replacement)));
+    return value;
+  };
+  function persistViewState(){const snapshot={version:1,mapId:state.payload?.mapId||null,direction:state.direction,theme:state.theme,language:state.language};try{sessionStorage.setItem("shendumao-context-map-view",JSON.stringify(snapshot))}catch{};try{const current=window.openai?.widgetState||{};Promise.resolve(window.openai?.setWidgetState?.({...current,shendumaoContextMap:snapshot})).catch(()=>{})}catch{}}
+  function absorbViewState(next){if(!next||typeof next!=="object")return;const direction=next.direction==="horizontal"?"horizontal":next.direction==="vertical"?"vertical":state.direction,theme=["light","dark","ocean","paper"].includes(next.theme)?next.theme:state.theme,language=next.language==="en"?"en":next.language==="zh"?"zh":state.language,layoutChanged=direction!==state.direction;state.direction=direction;state.theme=theme;state.language=language;document.documentElement.dataset.theme=theme;if($("theme"))$("theme").value=theme;if(layoutChanged&&state.payload){state.selected=null;$("inspector").hidden=true;render();requestAnimationFrame(fit)}}
+  function rpcNotify(method,params={}){if(window.parent!==window)window.parent.postMessage({jsonrpc:"2.0",method,params},"*")}
+  function rpcRequest(method,params={},timeout=8000){return new Promise((resolve,reject)=>{if(window.parent===window){reject(new Error("no host"));return}const id=++rpcId,timer=setTimeout(()=>{pendingRequests.delete(id);reject(new Error(`${method} timed out`))},timeout);pendingRequests.set(id,{resolve,reject,timer});window.parent.postMessage({jsonrpc:"2.0",id,method,params},"*")})}
+  const clean = (value, fallback="") => typeof value === "string" ? value : fallback;
+  const el = (tag, className, text) => { const node=document.createElement(tag); if(className)node.className=className; if(text!==undefined)node.textContent=text; return node; };
+  function validPayload(value) {
+    const candidates=[value?._meta?.widgetData,value?._meta?.["shendumao/mapData"],value?.widgetData,value?.["shendumao/mapData"],value?.structuredContent,value];
+    for(const candidate of candidates){const map=candidate?.map;if(!map||typeof map.title!=="string"||!Array.isArray(map.topics))continue;return {...candidate,map,revision:Number.isSafeInteger(candidate.revision)?candidate.revision:0,stats:candidate.stats||{topics:map.topics.length,nodes:map.topics.reduce((sum,topic)=>sum+(Array.isArray(topic.nodes)?topic.nodes.length:0),0)}}}
+    return null;
+  }
+  function openAiToolResult(globals){const metadata=globals?.toolResponseMetadata,envelope=metadata?.mcp_tool_result||metadata?.call_tool_result;if(envelope&&typeof envelope==="object")return {...envelope,structuredContent:envelope.structuredContent??globals?.toolOutput};return {structuredContent:globals?.toolOutput,_meta:metadata}}
+  function applyPayload(value) {
+    const next = validPayload(value);
+    if (!next) return false;
+    state.payload = next;
+    state.selected = null;
+    state.userCamera = false;
+    setSaveState();
+    $("empty").classList.remove("error");
+    $("empty").hidden = true;
+    render();
+    requestAnimationFrame(fit);
+    return true;
+  }
+  function applyToolResult(value){const error=value?._meta?.widgetError||value?._meta?.["shendumao/error"]||(value?.isError?value.content?.find(item=>item.type==="text")?.text:null);if(error){if(state.payload){setSaveState("saveFailed","error");notify(error);return false}$("world").replaceChildren();$("inspector").hidden=true;$("empty").hidden=false;$("empty").classList.add("error");$("empty").textContent=error;return false}return applyPayload(value)}
+  function translateUi() {
+    document.documentElement.lang = state.language === "en" ? "en" : "zh-CN";
+    $("brand-name").textContent=t("brand"); $("direction").textContent=t(state.direction); $("fit").textContent=t("fit"); $("fit-bottom").textContent=t("fit"); $("display-mode").textContent=t(displayMode==="fullscreen"?"inline":"fullscreen"); $("export").textContent=t("export"); $("language").textContent=state.language === "zh" ? "EN" : "中文"; if(!$("empty").classList.contains("error"))$("empty").textContent=t("waiting");
+    $("viewport").setAttribute("aria-label",t("aria")); $("zoom-out").setAttribute("aria-label",t("zoomOut")); $("zoom-in").setAttribute("aria-label",t("zoomIn")); $("theme").setAttribute("aria-label",t("style"));
+    [...$("theme").options].forEach(option => option.textContent=messages[state.language].themes[option.value]);
+    $("add-node").textContent=t("addNode"); $("node-dialog-title").textContent=t(state.editorMode==="add"?"addTitle":"editTitle"); $("node-dialog-help").textContent=t("editorHelp"); $("node-cancel").textContent=t("cancel"); $("node-submit").textContent=t("save"); $("delete-dialog-title").textContent=t("deleteTitle"); $("delete-dialog-help").textContent=t("deleteHelp"); $("delete-cancel").textContent=t("cancel"); $("delete-submit").textContent=t("deleteAction");
+    const menuLabels={edit:"edit",add:"addAfter",delete:"remove"};$("context-menu").querySelectorAll("[data-menu-action]").forEach(button=>button.textContent=t(menuLabels[button.dataset.menuAction]));
+    if(state.payload){ const stats={...state.payload.stats,revision:state.payload.revision}; $("stats").textContent=t("topics",stats); $("map-title").textContent=state.payload.map.title; }
+    $("add-node").disabled=!state.selected||state.payload?.mapId==="demo";
+    if(state.selected) renderInspector(state.selected);
+  }
+  function makeCard(item, type, lane, box) {
+    const interactive = type === "node";
+    const card = el(interactive ? "button" : "article", `card ${type}`);
+    if(interactive) card.type="button";
+    card.style.cssText=`left:${box.x}px;top:${box.y}px;width:${box.w}px;height:${box.h}px;--lane:${palette[lane%palette.length]}`;
+    const meta=el("span","meta"); meta.append(el("span","kind",clean(item.kind,type === "root" ? "起点" : type === "topic" ? String(lane+1).padStart(2,"0") : "节点")));
+    if(item.speaker) meta.append(el("span","speaker",item.speaker));
+    if(item.date) meta.append(el("time","",item.date));
+    card.append(meta,el("strong","",clean(item.title)));
+    const summary=clean(item.summary || item.description || item.compass);
+    if(summary) card.append(el("span","summary",summary));
+    if(interactive){ card.dataset.nodeId=item.id; card.setAttribute("aria-pressed",String(state.selected?.id===item.id)); if(state.selected?.id===item.id)card.classList.add("selected"); card.addEventListener("click",()=>{hideContextMenu();state.selected=item;draw();renderInspector(item);}); card.addEventListener("dblclick",event=>{event.preventDefault();openNodeEditor("edit",item.id)}); card.addEventListener("contextmenu",event=>openContextMenu(event,item.id)); }
+    return card;
+  }
+  function addRelatedEdges(map,items,edges){const byId=new Map(items.filter(item=>item.type==="node").map(item=>[item.item.id,item.key])),seen=new Set(edges.map(([from,to])=>`${from}>${to}`));map.topics.forEach(topic=>(topic.nodes||[]).forEach(node=>{const from=byId.get(node.related),to=byId.get(node.id),key=`${from}>${to}`;if(from&&to&&from!==to&&!seen.has(key)){edges.push([from,to,"related"]);seen.add(key)}}))}
+  function layout(map) {
+    const items=[],edges=[];
+    if(state.direction === "vertical"){
+      const cardW=224,gapX=34,nodeH=112,gapY=28,topicY=192,nodeY=286;
+      const width=Math.max(620,map.topics.length*(cardW+gapX)+40-gapX),root={key:"root",type:"root",item:{title:map.origin,kind:map.kind,summary:[map.description,map.compass].filter(Boolean).join(" · "),date:map.dateRange},lane:0,x:width/2-155,y:24,w:310,h:124}; items.push(root);
+      let bottom=root.y+root.h;const tails=[];
+      map.topics.forEach((topic,index)=>{const x=20+index*(cardW+gapX),topicItem={key:`topic:${topic.id}`,type:"topic",item:{...topic,kind:String(index+1).padStart(2,"0")},lane:index,x,y:topicY,w:cardW,h:66};items.push(topicItem);edges.push([root.key,topicItem.key]);let previous=topicItem;bottom=Math.max(bottom,topicItem.y+topicItem.h);
+        (topic.nodes||[]).forEach((node,nodeIndex)=>{const next={key:`node:${node.id}`,type:"node",item:node,lane:index,x,y:nodeY+nodeIndex*(nodeH+gapY),w:cardW,h:nodeH};items.push(next);edges.push([previous.key,next.key]);previous=next;bottom=Math.max(bottom,next.y+next.h);});
+        tails.push(previous);
+      });
+      if(map.end){const end={key:"end",type:"end",item:{title:map.end,kind:t("end")},lane:0,x:width/2-155,y:bottom+72,w:310,h:96};items.push(end);tails.forEach(tail=>edges.push([tail.key,end.key]));bottom=end.y+end.h;}
+      addRelatedEdges(map,items,edges);return {items,edges,width,height:bottom+48};
+    }
+    const rowH=156,rootW=310,topicX=390,nodeStartX=676,nodeW=224,nodeGap=54;
+    const height=Math.max(520,map.topics.length*rowH+34),maxNodes=Math.max(1,...map.topics.map(topic=>(topic.nodes||[]).length));let width=nodeStartX+maxNodes*(nodeW+nodeGap)+24;
+    const root={key:"root",type:"root",item:{title:map.origin,kind:map.kind,summary:[map.description,map.compass].filter(Boolean).join(" · "),date:map.dateRange},lane:0,x:28,y:height/2-62,w:rootW,h:124};items.push(root);const tails=[];
+    map.topics.forEach((topic,index)=>{const y=24+index*rowH,topicItem={key:`topic:${topic.id}`,type:"topic",item:{...topic,kind:String(index+1).padStart(2,"0")},lane:index,x:topicX,y:y+22,w:224,h:66};items.push(topicItem);edges.push([root.key,topicItem.key]);let previous=topicItem;
+      (topic.nodes||[]).forEach((node,nodeIndex)=>{const next={key:`node:${node.id}`,type:"node",item:node,lane:index,x:nodeStartX+nodeIndex*(nodeW+nodeGap),y,w:nodeW,h:112};items.push(next);edges.push([previous.key,next.key]);previous=next;});
+      tails.push(previous);
+    });
+    if(map.end){const end={key:"end",type:"end",item:{title:map.end,kind:t("end")},lane:0,x:width+24,y:height/2-48,w:310,h:96};items.push(end);tails.forEach(tail=>edges.push([tail.key,end.key]));width=end.x+end.w+28;}
+    addRelatedEdges(map,items,edges);return {items,edges,width,height};
+  }
+  function edgePath(from,to){
+    if(state.direction === "horizontal"){const x1=from.x+from.w,y1=from.y+from.h/2,x2=to.x,y2=to.y+to.h/2;return `M${x1},${y1} C${x1+58},${y1} ${x2-58},${y2} ${x2-8},${y2}`;}
+    const x1=from.x+from.w/2,y1=from.y+from.h,x2=to.x+to.w/2,y2=to.y;return `M${x1},${y1} C${x1},${y1+54} ${x2},${y2-54} ${x2},${y2-8}`;
+  }
+  function draw(){
+    if(!state.payload)return; const map=state.payload.map,model=layout(map);state.size={width:model.width,height:model.height};const world=$("world");world.replaceChildren();world.style.width=model.width+"px";world.style.height=model.height+"px";
+    const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("class","edges");svg.setAttribute("width",model.width);svg.setAttribute("height",model.height);svg.setAttribute("aria-hidden","true");
+    const defs=document.createElementNS(svg.namespaceURI,"defs"),marker=document.createElementNS(svg.namespaceURI,"marker");marker.setAttribute("id","arrow");marker.setAttribute("viewBox","0 0 10 10");marker.setAttribute("refX","9");marker.setAttribute("refY","5");marker.setAttribute("markerWidth","6");marker.setAttribute("markerHeight","6");marker.setAttribute("orient","auto");const arrow=document.createElementNS(svg.namespaceURI,"path");arrow.setAttribute("d","M0 0L10 5L0 10z");arrow.setAttribute("fill","currentColor");marker.append(arrow);defs.append(marker);svg.append(defs);
+    model.edges.forEach(([fromKey,toKey,edgeKind])=>{const from=model.items.find(item=>item.key===fromKey),to=model.items.find(item=>item.key===toKey),path=document.createElementNS(svg.namespaceURI,"path");path.setAttribute("class",`edge ${edgeKind==="related"?"related":""} ${state.selected && (to.item.id===state.selected.id||from.item.id===state.selected.id)?"lit":""}`);path.setAttribute("d",edgePath(from,to));path.setAttribute("marker-end","url(#arrow)");svg.append(path);});world.append(svg);
+    model.items.forEach(item=>world.append(makeCard(item.item,item.type,item.lane,item)));
+    applyCamera();
+  }
+  function render(){
+    if(!state.payload)return;const map=state.payload.map;$("map-title").textContent=map.title;$("stats").textContent=t("topics",{...state.payload.stats,revision:state.payload.revision});draw();translateUi();
+  }
+  function field(label,value,quote=false){if(!value)return null;const wrap=el("section","field"),heading=el("label","",label),body=el(quote?"blockquote":"p","",value);wrap.append(heading,body);return wrap;}
+  function renderInspector(item){
+    $("add-node").disabled=state.payload?.mapId==="demo";const panel=$("inspector");panel.replaceChildren();const head=el("div","inspector-head");head.append(el("span","kind",clean(item.kind,"节点")),el("span","date",[item.speaker,item.date].filter(Boolean).join(" · ")));const close=el("button","","×");close.type="button";close.setAttribute("aria-label",t("close"));close.onclick=()=>{state.selected=null;$("add-node").disabled=true;panel.hidden=true;draw();};head.append(close);panel.append(head,el("h2","",item.title));[field(t("summary"),item.summary),field(t("why"),item.why),field(t("change"),item.change),field(t("source"),item.quote,true)].filter(Boolean).forEach(node=>panel.append(node));const actions=el("div","inspector-actions"),edit=el("button","",t("edit")),add=el("button","",t("addAfter")),remove=el("button","danger",t("remove"));[edit,add,remove].forEach(button=>button.type="button");edit.onclick=()=>openNodeEditor("edit",item.id);add.onclick=()=>openNodeEditor("add",item.id);remove.onclick=()=>openDeleteDialog(item.id);actions.append(edit,add,remove);panel.append(actions);panel.hidden=false;
+  }
+  function applyCamera(){const world=$("world");world.style.transform=`translate(${state.camera.x}px,${state.camera.y}px) scale(${state.camera.scale})`;world.classList.toggle("distant",state.camera.scale<.65);$("zoom-label").textContent=Math.round(state.camera.scale*100)+"%";}
+  function zoom(next,x,y){const viewport=$("viewport");x??=viewport.clientWidth/2;y??=viewport.clientHeight/2;next=Math.max(.18,Math.min(2,next));const ratio=next/state.camera.scale;state.camera.x=x-(x-state.camera.x)*ratio;state.camera.y=y-(y-state.camera.y)*ratio;state.camera.scale=next;state.userCamera=true;applyCamera();}
+  function fit(){const viewport=$("viewport"),natural=Math.min((viewport.clientWidth-36)/state.size.width,(viewport.clientHeight-36)/state.size.height,1);state.camera.scale=Math.max(.18,natural);state.camera.x=Math.max(18,(viewport.clientWidth-state.size.width*state.camera.scale)/2);state.camera.y=Math.max(18,(viewport.clientHeight-state.size.height*state.camera.scale)/2);state.userCamera=false;applyCamera();}
+  function notify(message){$("toast").textContent=message;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").textContent="",3200);}
+  function setSaveState(key="",className=""){const target=$("save-state");target.textContent=key?t(key):"";target.className=`save-state ${className}`.trim()}
+  function editable(){if(!state.payload||state.payload.mapId==="demo"||state.payload.revision<1){notify(t("demoReadOnly"));return false}return true}
+  function findNode(nodeId){for(const topic of state.payload?.map?.topics||[]){const index=(topic.nodes||[]).findIndex(item=>item.id===nodeId);if(index>=0)return {topic,node:topic.nodes[index],index}}return null}
+  function makeMutationId(){return globalThis.crypto?.randomUUID?.()||`ui-${Date.now()}-${Math.random().toString(16).slice(2)}`}
+  function today(){const date=new Date(),pad=value=>String(value).padStart(2,"0");return `${String(date.getFullYear()).slice(-2)}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`}
+  function splitNodeContent(value){const lines=value.trim().split(/\r?\n/),first=lines.shift()?.trim()||"",title=first.length<=240?first:`${first.slice(0,239)}…`,summary=lines.join("\n").trim().slice(0,1200);return {title,summary}}
+  function toolError(result){return result?.content?.find(item=>item.type==="text")?.text||t("saveFailed")}
+  async function callMapTool(name,args){await bridgeReady;if(bridgeConnected)return rpcRequest("tools/call",{name,arguments:args},15000);if(window.openai?.callTool)return window.openai.callTool(name,args);throw new Error(t("toolUnavailable"))}
+  async function reloadLatest(){const latest=await callMapTool("get_context_map",{mapId:state.payload.mapId});if(latest?.isError)throw new Error(toolError(latest));applyToolResult(latest)}
+  async function saveOperations(operations,changeSummary,successKey,selectAfter=null){
+    if(!editable()||state.saving)return false;state.saving=true;setSaveState("saving","saving");
+    try{const result=await callMapTool("update_context_map",{mapId:state.payload.mapId,expectedRevision:state.payload.revision,mutationId:makeMutationId(),operations,change:{kind:"manual",summary:changeSummary}});if(result?.isError)throw new Error(toolError(result));if(result?.structuredContent?.status==="conflict"){await reloadLatest();setSaveState("conflict","error");notify(t("conflict"));return false}if(!applyToolResult(result))await reloadLatest();if(selectAfter){const found=findNode(selectAfter);if(found){state.selected=found.node;draw();renderInspector(found.node)}}setSaveState("saved");notify(t(successKey));return true}catch(error){setSaveState("saveFailed","error");notify(error?.message||t("saveFailed"));return false}finally{state.saving=false}}
+  function hideContextMenu(){state.contextNodeId=null;$("context-menu").hidden=true}
+  function openContextMenu(event,nodeId){event.preventDefault();event.stopPropagation();const found=findNode(nodeId);if(!found)return;state.selected=found.node;state.contextNodeId=nodeId;draw();renderInspector(found.node);const rect=$("viewport").getBoundingClientRect(),menu=$("context-menu");menu.hidden=false;const x=Math.min(event.clientX-rect.left,rect.width-menu.offsetWidth-8),y=Math.min(event.clientY-rect.top,rect.height-menu.offsetHeight-8);menu.style.left=`${Math.max(8,x)}px`;menu.style.top=`${Math.max(8,y)}px`}
+  function openNodeEditor(mode,nodeId){hideContextMenu();if(!editable())return;const found=findNode(nodeId);if(!found){notify(t("selectFirst"));return}state.editorMode=mode;state.contextNodeId=nodeId;$("node-dialog-title").textContent=t(mode==="add"?"addTitle":"editTitle");$("node-content").value=mode==="edit"?[found.node.title,found.node.summary].filter(Boolean).join("\n"):"";$("node-dialog").showModal();requestAnimationFrame(()=>$("node-content").focus())}
+  function openDeleteDialog(nodeId){hideContextMenu();if(!editable())return;if(!findNode(nodeId))return;state.deleteNodeId=nodeId;$("delete-dialog").showModal()}
+  function exportDocument(){return {format:"shendumao-context-map",schemaVersion:1,exportedAt:new Date().toISOString(),mapId:state.payload.mapId||null,stats:state.payload.stats,...state.payload.map}}
+  function browserDownload(name,body){const url=URL.createObjectURL(new Blob([body],{type:"application/json;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+  async function exportMap(){if(!state.payload)return;const name=`shendumao-map-${new Date().toISOString().slice(0,10)}.json`,body=JSON.stringify(exportDocument(),null,2);if(bridgeConnected){try{const result=await rpcRequest("ui/download-file",{contents:[{uri:`download://shendumao/${encodeURIComponent(name)}`,mimeType:"application/json;charset=utf-8",text:body}]});if(result?.isError)throw new Error("host rejected download");notify(t("exported"));return}catch{}}try{browserDownload(name,body);notify(t("exportFallback"))}catch{notify(t("exportFailed"))}}
+  async function toggleDisplayMode(){const target=displayMode==="fullscreen"?"inline":"fullscreen";await bridgeReady;try{let result;if(bridgeConnected)result=await rpcRequest("ui/request-display-mode",{mode:target});else if(window.openai?.requestDisplayMode)result=await window.openai.requestDisplayMode({mode:target});else throw new Error("unsupported");displayMode=result?.mode||result?.displayMode||target;translateUi();requestAnimationFrame(()=>{if(!state.userCamera)fit()})}catch{notify(t("displayUnavailable"))}}
+  $("node-cancel").onclick=()=>$("node-dialog").close();$("delete-cancel").onclick=()=>$("delete-dialog").close();
+  $("node-form").onsubmit=async event=>{event.preventDefault();const content=$("node-content").value.trim(),found=findNode(state.contextNodeId);if(!content||!found)return;const values=splitNodeContent(content);$("node-submit").disabled=true;try{if(state.editorMode==="edit"){const ok=await saveOperations([{type:"update_node",nodeId:found.node.id,patch:values}],`编辑节点：${values.title}`,"nodeUpdated",found.node.id);if(ok)$("node-dialog").close()}else{const id=`manual-${makeMutationId()}`,node={id,title:values.title,kind:"手动节点",summary:values.summary,why:"",change:"",quote:content,speaker:"用户",date:today(),related:null,evidence:"manual",sourceRefs:[]},ok=await saveOperations([{type:"add_node",topicId:found.topic.id,afterNodeId:found.node.id,node}],`添加节点：${values.title}`,"nodeAdded",id);if(ok)$("node-dialog").close()}}finally{$("node-submit").disabled=false}};
+  $("delete-form").onsubmit=async event=>{event.preventDefault();const found=findNode(state.deleteNodeId);if(!found)return;$("delete-submit").disabled=true;try{const ok=await saveOperations([{type:"delete_node",nodeId:found.node.id,removeIncomingRelations:true}],`删除节点：${found.node.title}`,"nodeRemoved");if(ok)$("delete-dialog").close()}finally{$("delete-submit").disabled=false}};
+  $("context-menu").onclick=event=>{const action=event.target.closest("[data-menu-action]")?.dataset.menuAction,nodeId=state.contextNodeId;if(!action||!nodeId)return;if(action==="edit")openNodeEditor("edit",nodeId);if(action==="add")openNodeEditor("add",nodeId);if(action==="delete")openDeleteDialog(nodeId)};
+  document.addEventListener("pointerdown",event=>{if(!event.target.closest("#context-menu"))hideContextMenu()},{passive:true});document.addEventListener("keydown",event=>{if(event.key==="Escape")hideContextMenu();if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="s"&&state.payload&&!$("node-dialog").open&&!$("delete-dialog").open){event.preventDefault();notify(t("saved"))}});
+  $("add-node").onclick=()=>state.selected?openNodeEditor("add",state.selected.id):notify(t("selectFirst"));$("direction").onclick=()=>{state.direction=state.direction==="vertical"?"horizontal":"vertical";state.selected=null;$("inspector").hidden=true;persistViewState();render();requestAnimationFrame(fit);};$("fit").onclick=$("fit-bottom").onclick=fit;$("display-mode").onclick=toggleDisplayMode;$("zoom-in").onclick=()=>zoom(state.camera.scale*1.25);$("zoom-out").onclick=()=>zoom(state.camera.scale/1.25);$("export").onclick=exportMap;$("language").onclick=()=>{state.language=state.language==="zh"?"en":"zh";persistViewState();state.payload?render():translateUi();};$("theme").onchange=(event)=>{state.theme=event.target.value;document.documentElement.dataset.theme=state.theme;persistViewState();};
+  const viewport=$("viewport");let drag=null;viewport.onpointerdown=(event)=>{if(event.target.closest("button,select,.inspector"))return;drag={x:event.clientX,y:event.clientY,cx:state.camera.x,cy:state.camera.y};viewport.setPointerCapture(event.pointerId);viewport.classList.add("dragging");};viewport.onpointermove=(event)=>{if(!drag)return;state.camera.x=drag.cx+event.clientX-drag.x;state.camera.y=drag.cy+event.clientY-drag.y;state.userCamera=true;applyCamera();};viewport.onpointerup=viewport.onpointercancel=()=>{drag=null;viewport.classList.remove("dragging");};viewport.addEventListener("wheel",(event)=>{event.preventDefault();const rect=viewport.getBoundingClientRect();zoom(state.camera.scale*Math.exp(-event.deltaY*.0015),event.clientX-rect.left,event.clientY-rect.top);},{passive:false});
+  window.addEventListener("message",(event)=>{if(event.source!==window.parent)return;const message=event.data;if(!message||message.jsonrpc!=="2.0")return;if(message.id!==undefined&&message.method==="ui/resource-teardown"){window.parent.postMessage({jsonrpc:"2.0",id:message.id,result:{}},"*");return}if(message.id!==undefined){const pending=pendingRequests.get(message.id);if(!pending)return;pendingRequests.delete(message.id);clearTimeout(pending.timer);message.error?pending.reject(message.error):pending.resolve(message.result);return}if(message.method==="ui/notifications/tool-result")applyToolResult(message.params?.result??message.params);if(message.method==="ui/notifications/host-context-changed"){displayMode=message.params?.displayMode||displayMode;translateUi()}},{passive:true});
+  window.addEventListener("openai:set_globals",(event)=>{const globals=event.detail?.globals||window.openai||{};displayMode=globals.displayMode||displayMode;absorbViewState(globals.widgetState?.shendumaoContextMap);applyToolResult(openAiToolResult(globals));translateUi()},{passive:true});
+  let resizeTimer=0;window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(state.payload&&!state.userCamera)fit()},80)},{passive:true});
+  async function initializeBridge(){if(window.parent===window)return false;try{const result=await rpcRequest("ui/initialize",{appInfo:{name:"shendumao-context-map-widget",version:"0.2.0"},appCapabilities:{availableDisplayModes:["inline","fullscreen"]},protocolVersion:"2026-01-26"});bridgeConnected=true;displayMode=result?.hostContext?.displayMode||displayMode;rpcNotify("ui/notifications/initialized",{});translateUi();return true}catch{return false}}
+  document.documentElement.dataset.theme=state.theme;$("theme").value=state.theme;translateUi();
+  applyToolResult(openAiToolResult(window.openai));
+  if(!state.payload&&window.parent===window)applyPayload(fallbackPayload);
+  const bridgeReady=initializeBridge();
+})();
+</script>
+</body>
+</html>
