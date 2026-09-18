@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "shendumaoContextMap": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CODEBUDDY_PLUGIN_ROOT}/mcp/server.bundle.mjs"],
+      "cwd": "${CODEBUDDY_PLUGIN_ROOT}"
+    }
+  }
+}

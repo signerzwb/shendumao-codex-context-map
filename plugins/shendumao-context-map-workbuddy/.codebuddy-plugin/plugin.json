@@ -1,0 +1,13 @@
+{
+  "name": "shendumao-context-map",
+  "version": "0.2.0",
+  "description": "把长期对话与规划持久整理为可追溯、可增量编辑和回看版本的本地思路地图。",
+  "author": {
+    "name": "神都猫"
+  },
+  "homepage": "https://github.com/signerzwb/shendumao-codex-context-map",
+  "repository": "https://github.com/signerzwb/shendumao-codex-context-map",
+  "license": "MIT",
+  "keywords": ["thought-map", "conversation-map", "mind-map", "workbuddy"],
+  "skills": "./skills/"
+}

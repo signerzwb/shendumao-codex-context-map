@@ -28,3 +28,10 @@ jobs:
       - name: Check committed runtime bundle
         shell: bash
         run: git diff --exit-code -- mcp/server.bundle.mjs
+      - name: Check WorkBuddy package matches the core runtime
+        working-directory: .
+        run: node scripts/sync-workbuddy.mjs --check
+      - name: Test WorkBuddy packaged MCP server
+        env:
+          SHENDUMAO_PLUGIN_ROOT: ${{ github.workspace }}/plugins/shendumao-context-map-workbuddy
+        run: node --test tests/mcp-server.test.mjs

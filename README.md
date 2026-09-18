@@ -1,8 +1,8 @@
 # 神都猫脉络（Shendumao Context Map）
 
-把长期 Codex 对话中的初心、主题分支、转折、决定理由和待办事项整理成一张可回看的思路地图。地图保存在本机，可以在后续任务中增量更新、手工编辑节点，并回看每次保存的历史版本。
+把长期对话中的初心、主题分支、转折、决定理由和待办事项整理成一张可回看的思路地图。地图保存在本机，可以在后续任务中增量更新、手工编辑节点，并回看每次保存的历史版本。
 
-这是一个 **Codex 本地插件**，不是需要常驻网页服务器的 SaaS。Codex 启动插件内的 stdio MCP 服务，并显示打包在插件内的交互界面；正常使用不需要访问 `127.0.0.1`。
+Codex 版已完成跨平台安装测试；现另提供 **WorkBuddy 试用适配包**，等待 WorkBuddy 桌面宿主中的图形画布验证。两版都是本地插件，不是需要常驻网页服务器的 SaaS；正常使用不需要访问 `127.0.0.1`。
 
 ## 界面预览与演示
 
@@ -25,7 +25,13 @@
 
 **当前边界：**插件不会自动监听每轮聊天，也不会在未经宿主授权时读取其他 Codex 任务。想更新地图，需要在任务中明确请 Codex 更新，或在图内手工编辑。插件界面能否永久固定在右侧由 Codex 宿主决定。规划脑图的完整自由拖动、导入外部脑图等仍属于桌面原型能力，尚未进入本插件。详见 [插件能力说明](plugins/shendumao-context-map/README.md)。
 
-## 在另一台电脑安装（Windows / macOS）
+## WorkBuddy 安装试用（Windows / macOS）
+
+在 WorkBuddy 的「插件」页添加第三方市场 `https://github.com/signerzwb/shendumao-codex-context-map`，从 `shendumao-workbuddy` 来源安装 `shendumao-context-map`。安装后先请它调用 `render_context_map` 打开虚构演示图，确认 MCP 工具和交互画布是否都出现。具体按钮、备用 MCP 配置和问题反馈方法见 [WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md)。
+
+WorkBuddy 适配目前是**宿主待验证版**：不能把 Codex 的安装命令直接复制到 WorkBuddy，也不能保证你的 WorkBuddy 版本支持 MCP Apps 画布。
+
+## Codex：在另一台电脑安装（Windows / macOS）
 
 先安装 Codex 和 **Node.js 18 或更高版本**，并确认终端可以运行 `codex --version` 与 `node --version`。本仓库已经提交运行用的单文件服务包与网页资源，普通安装无需执行 `npm install`、`npm run build`，也不需要单独启动服务。
 
@@ -75,6 +81,7 @@ codex plugin add shendumao-context-map@shendumao
 
 ```text
 .agents/plugins/marketplace.json        Codex marketplace 目录
+.codebuddy-plugin/marketplace.json      WorkBuddy / CodeBuddy marketplace 目录
 plugins/shendumao-context-map/
   .codex-plugin/plugin.json             插件元数据
   .mcp.json                             Codex 启动 MCP 的配置
@@ -82,6 +89,7 @@ plugins/shendumao-context-map/
   assets/context-map-widget.html        自包含交互界面
   skills/visualize-context/SKILL.md     对话整理规则
   tests/                                自动测试
+plugins/shendumao-context-map-workbuddy/ WorkBuddy 独立安装包（由主服务同步运行文件）
 ```
 
 `marketplace.json` 使用仓库内的相对路径，不包含开发电脑的绝对路径。因此安装源可以是 GitHub 仓库、克隆后的本地目录，或 Codex 支持的其他 marketplace 来源。
@@ -97,6 +105,8 @@ npm test
 ```
 
 代码更改后要重新构建并提交 `mcp/server.bundle.mjs`；仅修改源码而不更新 bundle，不会改变用户安装后的实际服务。GitHub Actions 在 Windows 和 macOS 上运行构建与测试。发布更新时同步提升插件版本，并在另一台机器重新执行 marketplace upgrade / plugin add。
+
+改动运行文件后还需在仓库根目录运行 `node scripts/sync-workbuddy.mjs`，把同一服务包和界面资源同步到 WorkBuddy 安装包；CI 会用 `--check` 校验两边一致。
 
 如修改了地图组件或虚构演示数据，运行 `npm run build:demo` 重新生成 `docs/demo.html`，并检查预览图是否需要更新。
 
