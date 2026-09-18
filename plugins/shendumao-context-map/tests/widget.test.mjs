@@ -23,6 +23,18 @@ test("工具错误保留已加载地图，首次加载错误仍显示空态", ()
   assert.match(handler, /\$\("empty"\)\.classList\.add\("error"\)/);
 });
 
+test("收到缺少地图的工具结果时明确显示诊断，不静默等待", () => {
+  const handler = sourceLine("function applyToolResult");
+  assert.match(handler, /if\(reportMissing\)/);
+  assert.match(handler, /t\("missingMap"\)/);
+  assert.match(widget, /ui\/notifications\/tool-result"\)applyToolResult\(message\.params\?\.result\?\?message\.params,true\)/);
+});
+
+test("MCP Apps 握手失败时保留原因供图内工具错误提示", () => {
+  assert.match(sourceLine("function initializeBridge"), /bridgeFailure=error\?\.message\|\|String\(error\)/);
+  assert.match(sourceLine("async function callMapTool"), /bridgeFailure/);
+});
+
 test("手工节点日期使用本地年月日而非 UTC 日期", () => {
   const handler = sourceLine("function today");
   assert.match(handler, /getFullYear\(\)/);
@@ -39,6 +51,6 @@ test("删除确认明确说明会清除指向节点的关联线", () => {
 test("兼容 window.openai 的 canonical mcp_tool_result 元数据封装", () => {
   const helper = sourceLine("function openAiToolResult");
   assert.match(helper, /metadata\?\.mcp_tool_result\|\|metadata\?\.call_tool_result/);
-  assert.match(widget, /applyToolResult\(openAiToolResult\(globals\)\)/);
+  assert.match(widget, /applyToolResult\(openAiToolResult\(globals\),globals\.toolOutput/);
   assert.match(widget, /applyToolResult\(openAiToolResult\(window\.openai\)\)/);
 });

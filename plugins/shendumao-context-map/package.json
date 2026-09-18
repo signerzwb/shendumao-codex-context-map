@@ -1,6 +1,6 @@
 {
   "name": "shendumao-context-map-plugin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "神都猫脉络 Codex 插件的持久地图、增量编辑、版本回看与本地 MCP UI。",

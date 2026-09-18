@@ -58,11 +58,13 @@ test("MCP 服务公开持久化、版本与编辑工具，并返回自包含 UI 
     assert.equal(renderTool._meta?.ui?.resourceUri, UI_URI);
     assert.deepEqual(renderTool._meta?.ui?.visibility, ["model"]);
     assert.equal(renderTool.annotations?.readOnlyHint, true);
+    assert.ok(renderTool.outputSchema.properties.map);
     assert.ok(prepareTool.inputSchema.required.includes("mutationId"));
     assert.equal(prepareTool.annotations?.idempotentHint, true);
     assert.equal(updateTool.annotations?.readOnlyHint, false);
     assert.equal(updateTool.annotations?.destructiveHint, true);
     assert.equal(updateTool.annotations?.idempotentHint, true);
+    assert.ok(updateTool.outputSchema.properties.map);
     assert.deepEqual(updateTool._meta?.ui?.visibility, ["model", "app"]);
     assert.equal(updateTool._meta?.["openai/widgetAccessible"], true);
 
@@ -96,7 +98,8 @@ test("地图跨 MCP 重启保留，增量更新有 revision、历史与冲突保
       assert.equal(demo.isError, undefined);
       assert.equal(demo.structuredContent.mapId, "demo");
       assert.equal(demo.structuredContent.revision, 0);
-      assert.equal(demo.structuredContent.map, undefined);
+      assert.ok(demo.structuredContent.map.topics.length > 0);
+      assert.equal(demo.structuredContent.sourceCheckpoint, null);
       assert.equal(demo._meta.widgetData.mapId, "demo");
 
       const prepared = await client.callTool({
@@ -125,6 +128,7 @@ test("地图跨 MCP 重启保留，增量更新有 revision、历史与冲突保
       assert.equal(prepared.structuredContent.revision, 1);
       assert.equal(prepared.structuredContent.status, "created");
       assert.equal(prepared.structuredContent.map, undefined);
+      assert.match(prepared.content[0].text, new RegExp(`mapId=${prepared.structuredContent.mapId}`));
       mapId = prepared.structuredContent.mapId;
     });
 
@@ -155,11 +159,13 @@ test("地图跨 MCP 重启保留，增量更新有 revision、历史与冲突保
       assert.equal(updated.isError, undefined);
       assert.equal(updated.structuredContent.status, "saved");
       assert.equal(updated.structuredContent.revision, 2);
-      assert.equal(updated.structuredContent.map, undefined);
+      assert.equal(updated.structuredContent.map.topics[0].nodes[1].id, "manual-1");
+      assert.match(updated.content[0].text, new RegExp(`mapId=${mapId}`));
       assert.equal(updated._meta.widgetData.map.topics[0].nodes[1].id, "manual-1");
 
       const retried = await client.callTool({ name: "update_context_map", arguments: updateArguments });
       assert.equal(retried.structuredContent.revision, 2);
+      assert.equal(retried.structuredContent.map.topics[0].nodes.filter((node) => node.id === "manual-1").length, 1);
       assert.equal(retried._meta.widgetData.map.topics[0].nodes.filter((node) => node.id === "manual-1").length, 1);
 
       const historical = await client.callTool({ name: "get_context_map", arguments: { mapId, revision: 1 } });
@@ -171,6 +177,8 @@ test("地图跨 MCP 重启保留，增量更新有 revision、历史与冲突保
       const listed = await client.callTool({ name: "list_context_maps", arguments: {} });
       assert.equal(listed.structuredContent.maps.length, 1);
       assert.equal(listed.structuredContent.maps[0].revision, 2);
+      assert.match(listed.content[0].text, new RegExp(mapId));
+      assert.match(listed.content[0].text, /revision=2/);
       const revisions = await client.callTool({ name: "list_context_map_revisions", arguments: { mapId } });
       assert.deepEqual(revisions.structuredContent.revisions.map((item) => item.revision), [2, 1]);
       assert.equal(revisions.structuredContent.revisions[0].change.summary, "图内添加一个手工节点");
@@ -189,10 +197,12 @@ test("地图跨 MCP 重启保留，增量更新有 revision、历史与冲突保
       assert.equal(conflict.structuredContent.status, "conflict");
       assert.equal(conflict.structuredContent.revision, 2);
       assert.equal(conflict.structuredContent.expectedRevision, 1);
+      assert.equal(conflict.structuredContent.map.topics[0].nodes[1].id, "manual-1");
 
       const rendered = await client.callTool({ name: "render_context_map", arguments: { mapId } });
       assert.equal(rendered._meta?.ui?.resourceUri, UI_URI);
       assert.equal(rendered.structuredContent.revision, 2);
+      assert.equal(rendered.structuredContent.map.topics[0].nodes[1].title, "一段自然语言");
       assert.equal(rendered._meta.widgetData.map.topics[0].nodes[1].title, "一段自然语言");
 
       const missing = await client.callTool({ name: "get_context_map", arguments: { mapId: "missing" } });

@@ -22328,7 +22328,7 @@ var MapRepository = class {
 };
 
 // mcp/server.mjs
-var VERSION = "0.2.0";
+var VERSION = "0.2.1";
 var UI_URI = "ui://shendumao/context-map-v1.html";
 var EVIDENCE_KINDS2 = ["user-stated", "assistant-reported", "summary", "inference", "manual"];
 var sourceRefSchema = external_exports.object({
@@ -22621,7 +22621,7 @@ function modelResult(record2, {
     structuredContent: includeMap ? { ...summary, map: record2.map, sourceCheckpoint: record2.sourceCheckpoint ?? null } : summary,
     content: [{
       type: "text",
-      text: `\u201C${record2.map.title}\u201D${versionText}\uFF1A${summary.stats.topics} \u4E2A\u4E3B\u9898\u3001${summary.stats.nodes} \u4E2A\u5173\u952E\u8282\u70B9\u3002\u8D77\u70B9\uFF1A${record2.map.origin}`
+      text: `\u201C${record2.map.title}\u201D${versionText}\uFF08mapId=${record2.mapId}\uFF0Crevision=${record2.revision}\uFF09\uFF1A${summary.stats.topics} \u4E2A\u4E3B\u9898\u3001${summary.stats.nodes} \u4E2A\u5173\u952E\u8282\u70B9\u3002\u8D77\u70B9\uFF1A${record2.map.origin}`
     }]
   };
   if (withWidgetData) {
@@ -22726,7 +22726,7 @@ server.registerTool(
       sourceCheckpoint: sourceCheckpointSchema.optional(),
       change: changeSchema
     },
-    outputSchema: summaryOutputSchema,
+    outputSchema: fullOutputSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false, idempotentHint: true },
     _meta: {
       ui: { visibility: ["model", "app"] },
@@ -22739,7 +22739,7 @@ server.registerTool(
     try {
       const requestHash = hashRequest({ mapId, expectedRevision, operations, sourceCheckpoint, change });
       const priorResult = await recordedMutation(mapId, mutationId, requestHash);
-      if (priorResult) return modelResult(priorResult, { withWidgetData: true, status: "saved" });
+      if (priorResult) return modelResult(priorResult, { includeMap: true, withWidgetData: true, status: "saved" });
       const current = await repository.get(mapId);
       const updatedMap = normalizedMapSchema.parse(applyMapOperations(current.map, operations));
       const record2 = await repository.update(mapId, updatedMap, {
@@ -22749,15 +22749,15 @@ server.registerTool(
         change,
         ...sourceCheckpoint !== void 0 ? { sourceCheckpoint } : {}
       });
-      return modelResult(record2, { withWidgetData: true, status: "saved" });
+      return modelResult(record2, { includeMap: true, withWidgetData: true, status: "saved" });
     } catch (error2) {
       if (error2 instanceof RevisionConflictError) {
         try {
           const current = await repository.get(mapId);
-          return {
-            structuredContent: recordSummary(current, "conflict", { expectedRevision }),
-            content: [{ type: "text", text: error2.message }]
-          };
+          const result = modelResult(current, { includeMap: true, withWidgetData: true, status: "conflict" });
+          result.structuredContent.expectedRevision = expectedRevision;
+          result.content[0].text = `${error2.message}\uFF08mapId=${mapId}\uFF0C\u5F53\u524D revision=${current.revision}\uFF09`;
+          return result;
         } catch (readError) {
           return errorResult(readError);
         }
@@ -22804,7 +22804,13 @@ server.registerTool(
       const maps = records.map((record2) => recordSummary(record2));
       return {
         structuredContent: { schemaVersion: 2, maps },
-        content: [{ type: "text", text: `\u627E\u5230 ${maps.length} \u5F20\u5DF2\u4FDD\u5B58\u7684\u8109\u7EDC\u56FE\u3002` }]
+        content: [{
+          type: "text",
+          text: [
+            `\u672C\u9875\u627E\u5230 ${maps.length} \u5F20\u5DF2\u4FDD\u5B58\u7684\u8109\u7EDC\u56FE\uFF08offset=${offset}\uFF0Climit=${limit}\uFF09\u3002`,
+            ...maps.map((map) => `${map.mapId}  revision=${map.revision}  ${map.stats.topics} \u4E3B\u9898/${map.stats.nodes} \u8282\u70B9  ${map.updatedAt ?? "\u65E0\u65E5\u671F"}  \u201C${map.title}\u201D`)
+          ].join("\n")
+        }]
       };
     } catch (error2) {
       return errorResult(error2);
@@ -22844,7 +22850,7 @@ server.registerTool(
     title: "\u6253\u5F00\u8109\u7EDC\u56FE",
     description: "\u7528\u795E\u90FD\u732B\u8109\u7EDC\u4EA4\u4E92\u753B\u5E03\u5C55\u793A\u6301\u4E45\u5730\u56FE\uFF0C\u53EF\u6307\u5B9A\u5386\u53F2 revision\uFF1B\u7701\u7565 mapId \u65F6\u6253\u5F00\u53EA\u8BFB\u6F14\u793A\u3002",
     inputSchema: { mapId: external_exports.string().trim().min(1).optional(), revision: external_exports.number().int().positive().optional() },
-    outputSchema: summaryOutputSchema,
+    outputSchema: fullOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     _meta: {
       ui: { resourceUri: UI_URI, visibility: ["model"] },
@@ -22854,10 +22860,10 @@ server.registerTool(
     }
   },
   async ({ mapId = "demo", revision }) => {
-    if (mapId === "demo") return modelResult(demoRecord, { withUi: true });
+    if (mapId === "demo") return modelResult(demoRecord, { includeMap: true, withUi: true });
     try {
       const record2 = await repository.get(mapId, revision);
-      return modelResult(record2, { withUi: true });
+      return modelResult(record2, { includeMap: true, withUi: true });
     } catch (error2) {
       return errorResult(error2, { withUi: true });
     }

@@ -35,7 +35,7 @@ Codex 版已完成跨平台安装测试；现另提供 **WorkBuddy 试用适配�
 
 在中国大陆网络下访问 GitHub 不稳定时，[WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md#github-访问不畅时的对话指令)还提供了第三方加速链接和对应的对话指令。它只作为下载备用，不是项目官方发布地址；优先使用原始 GitHub 仓库。
 
-WorkBuddy 适配目前是**宿主待验证版**：不能把 Codex 的安装命令直接复制到 WorkBuddy，也不能保证你的 WorkBuddy 版本支持 MCP Apps 画布。
+WorkBuddy 适配目前是**画布待复测版**：已有 Windows 用户反馈插件和 MCP 工具可加载，v0.2.1 修复了画布结果只依赖 `_meta` 的问题；仍不能保证你的 WorkBuddy 版本支持 MCP Apps 画布。不能把 Codex 的安装命令直接复制到 WorkBuddy。
 
 ## Codex：在另一台电脑安装（Windows / macOS）
 

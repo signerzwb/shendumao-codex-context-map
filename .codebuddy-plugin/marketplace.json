@@ -9,7 +9,7 @@
       "name": "shendumao-context-map",
       "source": "./plugins/shendumao-context-map-workbuddy",
       "description": "把对话和规划整理为可回看的本地思路地图（WorkBuddy 适配试用版）",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "神都猫"
       },

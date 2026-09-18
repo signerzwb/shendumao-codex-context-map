@@ -10,7 +10,7 @@ import {
   RevisionConflictError,
 } from "./storage.mjs";
 
-const VERSION = "0.2.0";
+const VERSION = "0.2.1";
 const UI_URI = "ui://shendumao/context-map-v1.html";
 const EVIDENCE_KINDS = ["user-stated", "assistant-reported", "summary", "inference", "manual"];
 
@@ -338,7 +338,7 @@ function modelResult(record, {
       : summary,
     content: [{
       type: "text",
-      text: `“${record.map.title}”${versionText}：${summary.stats.topics} 个主题、${summary.stats.nodes} 个关键节点。起点：${record.map.origin}`,
+      text: `“${record.map.title}”${versionText}（mapId=${record.mapId}，revision=${record.revision}）：${summary.stats.topics} 个主题、${summary.stats.nodes} 个关键节点。起点：${record.map.origin}`,
     }],
   };
   if (withWidgetData) {
@@ -450,7 +450,7 @@ server.registerTool(
       sourceCheckpoint: sourceCheckpointSchema.optional(),
       change: changeSchema,
     },
-    outputSchema: summaryOutputSchema,
+    outputSchema: fullOutputSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false, idempotentHint: true },
     _meta: {
       ui: { visibility: ["model", "app"] },
@@ -463,7 +463,7 @@ server.registerTool(
     try {
       const requestHash = hashRequest({ mapId, expectedRevision, operations, sourceCheckpoint, change });
       const priorResult = await recordedMutation(mapId, mutationId, requestHash);
-      if (priorResult) return modelResult(priorResult, { withWidgetData: true, status: "saved" });
+      if (priorResult) return modelResult(priorResult, { includeMap: true, withWidgetData: true, status: "saved" });
       const current = await repository.get(mapId);
       const updatedMap = normalizedMapSchema.parse(applyMapOperations(current.map, operations));
       const record = await repository.update(mapId, updatedMap, {
@@ -473,15 +473,15 @@ server.registerTool(
         change,
         ...(sourceCheckpoint !== undefined ? { sourceCheckpoint } : {}),
       });
-      return modelResult(record, { withWidgetData: true, status: "saved" });
+      return modelResult(record, { includeMap: true, withWidgetData: true, status: "saved" });
     } catch (error) {
       if (error instanceof RevisionConflictError) {
         try {
           const current = await repository.get(mapId);
-          return {
-            structuredContent: recordSummary(current, "conflict", { expectedRevision }),
-            content: [{ type: "text", text: error.message }],
-          };
+          const result = modelResult(current, { includeMap: true, withWidgetData: true, status: "conflict" });
+          result.structuredContent.expectedRevision = expectedRevision;
+          result.content[0].text = `${error.message}（mapId=${mapId}，当前 revision=${current.revision}）`;
+          return result;
         } catch (readError) {
           return errorResult(readError);
         }
@@ -530,7 +530,13 @@ server.registerTool(
       const maps = records.map((record) => recordSummary(record));
       return {
         structuredContent: { schemaVersion: 2, maps },
-        content: [{ type: "text", text: `找到 ${maps.length} 张已保存的脉络图。` }],
+        content: [{
+          type: "text",
+          text: [
+            `本页找到 ${maps.length} 张已保存的脉络图（offset=${offset}，limit=${limit}）。`,
+            ...maps.map((map) => `${map.mapId}  revision=${map.revision}  ${map.stats.topics} 主题/${map.stats.nodes} 节点  ${map.updatedAt ?? "无日期"}  “${map.title}”`),
+          ].join("\n"),
+        }],
       };
     } catch (error) {
       return errorResult(error);
@@ -572,7 +578,7 @@ server.registerTool(
     title: "打开脉络图",
     description: "用神都猫脉络交互画布展示持久地图，可指定历史 revision；省略 mapId 时打开只读演示。",
     inputSchema: { mapId: z.string().trim().min(1).optional(), revision: z.number().int().positive().optional() },
-    outputSchema: summaryOutputSchema,
+    outputSchema: fullOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     _meta: {
       ui: { resourceUri: UI_URI, visibility: ["model"] },
@@ -582,10 +588,10 @@ server.registerTool(
     },
   },
   async ({ mapId = "demo", revision }) => {
-    if (mapId === "demo") return modelResult(demoRecord, { withUi: true });
+    if (mapId === "demo") return modelResult(demoRecord, { includeMap: true, withUi: true });
     try {
       const record = await repository.get(mapId, revision);
-      return modelResult(record, { withUi: true });
+      return modelResult(record, { includeMap: true, withUi: true });
     } catch (error) {
       return errorResult(error, { withUi: true });
     }
