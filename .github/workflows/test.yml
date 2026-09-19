@@ -25,9 +25,9 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - name: Check committed runtime bundle
+      - name: Check committed runtime bundles
         shell: bash
-        run: git diff --exit-code -- mcp/server.bundle.mjs
+        run: git diff --exit-code -- mcp/server.bundle.mjs ../shendumao-context-map-workbuddy/mcp/server.bundle.mjs
       - name: Check WorkBuddy package matches the core runtime
         working-directory: .
         run: node scripts/sync-workbuddy.mjs --check

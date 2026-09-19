@@ -2,7 +2,7 @@
 
 把长期对话中的初心、主题分支、转折、决定理由和待办事项整理成一张可回看的思路地图。地图保存在本机，可以在后续任务中增量更新、手工编辑节点，并回看每次保存的历史版本。
 
-Codex 版已完成跨平台安装测试；现另提供 **WorkBuddy 试用适配包**，等待 WorkBuddy 桌面宿主中的图形画布验证。两版都是本地插件，不是需要常驻网页服务器的 SaaS；正常使用不需要访问 `127.0.0.1`。
+Codex 版已完成跨平台安装测试。WorkBuddy 版 0.3.0 改用独立的本机浏览器展示链路，不再依赖 WorkBuddy 渲染 MCP Apps 画布；当前已通过本地自动测试，仍待 WorkBuddy 桌面端及 macOS 实机验收。WorkBuddy 调用打开地图时会临时启动只监听 `127.0.0.1` 的页面并尝试自动打开浏览器，不是公网 SaaS，也无需手工启动服务。
 
 ## 界面预览与演示
 
@@ -25,17 +25,15 @@ Codex 版已完成跨平台安装测试；现另提供 **WorkBuddy 试用适配�
 
 **当前边界：**插件不会自动监听每轮聊天，也不会在未经宿主授权时读取其他 Codex 任务。想更新地图，需要在任务中明确请 Codex 更新，或在图内手工编辑。插件界面能否永久固定在右侧由 Codex 宿主决定。规划脑图的完整自由拖动、导入外部脑图等仍属于桌面原型能力，尚未进入本插件。详见 [插件能力说明](plugins/shendumao-context-map/README.md)。
 
-## WorkBuddy 安装试用（Windows / macOS）
+## WorkBuddy 安装与浏览器版测试（Windows / macOS）
 
 **推荐先在 WorkBuddy 对话中发安装请求**，让它检查仓库和本机环境，并在其权限范围内尝试安装：
 
-> 请帮我安装这个 WorkBuddy 插件：https://github.com/signerzwb/shendumao-codex-context-map 。先阅读仓库里的 WorkBuddy 试用说明，核对插件来源、安装内容和 Node.js 要求；如果你能管理插件市场，就添加这个仓库并安装 `shendumao-context-map@shendumao-workbuddy`。需要我确认权限或在界面中操作时请明确指出，不要假装已经安装成功。完成后告诉我是否需要重启或新建任务，并验证 `render_context_map` 是否可用。
+> 请帮我安装这个 WorkBuddy 插件：https://github.com/signerzwb/shendumao-codex-context-map 。先阅读仓库里的 WorkBuddy 说明，核对插件来源、安装内容和 Node.js 要求；如果你能管理插件市场，就添加这个仓库并安装 `shendumao-context-map@shendumao-workbuddy`。需要我确认权限或在界面中操作时请明确指出，不要假装已经安装成功。完成后告诉我是否需要重启或新建任务，并调用不传 `mapId` 的 `render_context_map`，检查是否自动在默认浏览器打开演示地图。
 
-这是一条交给 WorkBuddy 执行的任务，**不是已确认的“粘贴链接自动安装”内置功能**。如果当前版本不能从对话管理插件，请按 [WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md) 在「插件」页添加第三方市场并安装；该文档也有备用 MCP 配置和测试步骤。
+这是一条交给 WorkBuddy 执行的任务，**不是已确认的“粘贴链接自动安装”内置功能**。如果当前版本不能从对话管理插件，请按 [WorkBuddy 安装说明](plugins/shendumao-context-map-workbuddy/README.md) 在「插件」页添加第三方市场并安装。
 
-在中国大陆网络下访问 GitHub 不稳定时，[WorkBuddy 试用说明](plugins/shendumao-context-map-workbuddy/README.md#github-访问不畅时的对话指令)还提供了第三方加速链接和对应的对话指令。它只作为下载备用，不是项目官方发布地址；优先使用原始 GitHub 仓库。
-
-WorkBuddy 适配目前是**画布待复测版**：已有 Windows 用户反馈插件和 MCP 工具可加载，v0.2.1 修复了画布结果只依赖 `_meta` 的问题；仍不能保证你的 WorkBuddy 版本支持 MCP Apps 画布。不能把 Codex 的安装命令直接复制到 WorkBuddy。
+WorkBuddy 版目前仍是**实机待验收版**：它不再要求宿主支持 MCP Apps 画布，但尚未确认 WorkBuddy 桌面版能否让插件进程自动唤起系统浏览器。不能把 Codex 的安装命令直接复制到 WorkBuddy。
 
 ## Codex：在另一台电脑安装（Windows / macOS）
 
@@ -95,7 +93,7 @@ plugins/shendumao-context-map/
   assets/context-map-widget.html        自包含交互界面
   skills/visualize-context/SKILL.md     对话整理规则
   tests/                                自动测试
-plugins/shendumao-context-map-workbuddy/ WorkBuddy 独立安装包（由主服务同步运行文件）
+plugins/shendumao-context-map-workbuddy/ WorkBuddy 独立安装包（独立浏览器运行包，共享地图组件）
 ```
 
 `marketplace.json` 使用仓库内的相对路径，不包含开发电脑的绝对路径。因此安装源可以是 GitHub 仓库、克隆后的本地目录，或 Codex 支持的其他 marketplace 来源。
@@ -110,9 +108,9 @@ npm run build
 npm test
 ```
 
-代码更改后要重新构建并提交 `mcp/server.bundle.mjs`；仅修改源码而不更新 bundle，不会改变用户安装后的实际服务。GitHub Actions 在 Windows 和 macOS 上运行构建与测试。发布更新时同步提升插件版本，并在另一台机器重新执行 marketplace upgrade / plugin add。
+代码更改后要重新构建并提交 Codex 和 WorkBuddy 各自的 `mcp/server.bundle.mjs`；仅修改源码而不更新 bundle，不会改变用户安装后的实际服务。GitHub Actions 在 Windows 和 macOS 上运行构建与测试。两版可以独立升级版本；发布更新后需在另一台机器重新安装并验收。
 
-改动运行文件后还需在仓库根目录运行 `node scripts/sync-workbuddy.mjs`，把同一服务包和界面资源同步到 WorkBuddy 安装包；CI 会用 `--check` 校验两边一致。
+改动共享画布资源后还需在仓库根目录运行 `node scripts/sync-workbuddy.mjs`，同步 WorkBuddy 安装包中的 HTML 与演示数据；WorkBuddy 服务包由 `npm run build` 独立构建。CI 会用 `--check` 校验共享资源。
 
 如修改了地图组件或虚构演示数据，运行 `npm run build:demo` 重新生成 `docs/demo.html`，并检查预览图是否需要更新。
 

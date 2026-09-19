@@ -21434,6 +21434,106 @@ var StdioServerTransport = class {
   }
 };
 
+// mcp/browser-view.mjs
+import { randomBytes } from "node:crypto";
+import { createServer } from "node:http";
+import { spawn } from "node:child_process";
+var MAX_BODY_BYTES = 1e6;
+function safeJson(value) {
+  return JSON.stringify(value).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
+}
+function send(response, status, body, type = "text/plain; charset=utf-8") {
+  response.writeHead(status, {
+    "Content-Type": type,
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src data: blob:; form-action 'none'; base-uri 'none'"
+  });
+  response.end(body);
+}
+async function readJson(request) {
+  let body = "";
+  for await (const chunk of request) {
+    body += chunk;
+    if (Buffer.byteLength(body, "utf8") > MAX_BODY_BYTES) throw new Error("\u8BF7\u6C42\u5185\u5BB9\u8FC7\u5927\u3002");
+  }
+  return JSON.parse(body);
+}
+function launchBrowser(url) {
+  if (process.env.SHENDUMAO_DISABLE_AUTO_OPEN === "1") return Promise.resolve({ launched: false, reason: "\u81EA\u52A8\u6253\u5F00\u5DF2\u7981\u7528" });
+  const platform = process.platform;
+  const command = platform === "win32" ? "explorer.exe" : platform === "darwin" ? "open" : "xdg-open";
+  return new Promise((resolve2) => {
+    const child = spawn(command, [url], { stdio: "ignore", windowsHide: true, detached: true });
+    child.once("error", (error2) => resolve2({ launched: false, reason: error2.message }));
+    child.once("spawn", () => {
+      child.unref();
+      resolve2({ launched: true });
+    });
+  });
+}
+function createBrowserView({ widgetTemplate: widgetTemplate2, loadResult, invokeTool }) {
+  const token = randomBytes(32).toString("hex");
+  let httpServer;
+  let baseUrl;
+  async function handle(request, response) {
+    const requestUrl = new URL(request.url || "/", baseUrl);
+    if (request.headers.host !== new URL(baseUrl).host) return send(response, 403, "Forbidden");
+    if (requestUrl.pathname === "/view" && request.method === "GET") {
+      if (requestUrl.searchParams.get("token") !== token) return send(response, 403, "Forbidden");
+      const mapId = requestUrl.searchParams.get("mapId") || "demo";
+      const rawRevision = requestUrl.searchParams.get("revision");
+      const revision = rawRevision === null ? void 0 : Number(rawRevision);
+      if (rawRevision !== null && (!Number.isSafeInteger(revision) || revision < 1)) return send(response, 400, "Invalid revision");
+      const result = await loadResult(mapId, revision);
+      if (result.isError) return send(response, 404, result.content?.[0]?.text || "Map not found");
+      const payload = result.structuredContent;
+      const bootstrap = `<script>window.SHENDUMAO_HISTORY_READ_ONLY=${revision !== void 0};window.openai={toolOutput:${safeJson(payload)},callTool:async(name,args)=>{const response=await fetch('/api/call',{method:'POST',headers:{'Content-Type':'application/json','X-Shendumao-Token':'${token}'},body:JSON.stringify({name,args})});return response.json()},requestDisplayMode:async({mode})=>{if(mode==='fullscreen')await document.documentElement.requestFullscreen();else if(document.fullscreenElement)await document.exitFullscreen();return {mode}}};${revision === void 0 && mapId !== "demo" ? `let lastRevision=${payload.revision};setInterval(async()=>{try{const result=await window.openai.callTool('get_context_map',{mapId:${safeJson(mapId)}});const next=result.structuredContent;if(next&&next.revision!==lastRevision){lastRevision=next.revision;window.openai.toolOutput=next;window.dispatchEvent(new CustomEvent('openai:set_globals',{detail:{globals:{toolOutput:next}}}))}}catch{}},4000);` : ""}</script>`;
+      const html = widgetTemplate2.replace("</head>", `${bootstrap}</head>`);
+      return send(response, 200, html, "text/html; charset=utf-8");
+    }
+    if (requestUrl.pathname === "/api/call" && request.method === "POST") {
+      if (request.headers["x-shendumao-token"] !== token || request.headers.origin !== baseUrl) return send(response, 403, "Forbidden");
+      try {
+        const { name, args } = await readJson(request);
+        if (name !== "get_context_map" && name !== "update_context_map") return send(response, 403, "Forbidden");
+        const result = await invokeTool(name, args);
+        return send(response, 200, JSON.stringify(result), "application/json; charset=utf-8");
+      } catch (error2) {
+        return send(response, 400, JSON.stringify({ isError: true, content: [{ type: "text", text: error2.message }] }), "application/json; charset=utf-8");
+      }
+    }
+    send(response, 404, "Not found");
+  }
+  async function ensureStarted() {
+    if (baseUrl) return baseUrl;
+    httpServer = createServer((request, response) => {
+      handle(request, response).catch(() => send(response, 500, "Internal error"));
+    });
+    await new Promise((resolve2, reject) => {
+      httpServer.once("error", reject);
+      httpServer.listen(0, "127.0.0.1", resolve2);
+    });
+    baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
+    return baseUrl;
+  }
+  return {
+    async open(mapId = "demo", revision) {
+      const base = await ensureStarted();
+      const url = new URL("/view", base);
+      url.searchParams.set("token", token);
+      url.searchParams.set("mapId", mapId);
+      if (revision !== void 0) url.searchParams.set("revision", String(revision));
+      const launch = await launchBrowser(url.href);
+      return { url: url.href, ...launch };
+    },
+    close() {
+      httpServer?.close();
+    }
+  };
+}
+
 // mcp/operations.mjs
 var MAX_TOPICS = 12;
 var MAX_NODES_PER_TOPIC = 24;
@@ -21939,7 +22039,7 @@ async function pathStat(path) {
     throw error2;
   }
 }
-async function readJson(path) {
+async function readJson2(path) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 async function syncDirectory(path) {
@@ -22019,7 +22119,7 @@ var MapRepository = class {
     const path = join(this.mapDirectory(normalizedId), revisionFileName(normalizedRevision));
     let record2;
     try {
-      record2 = await readJson(path);
+      record2 = await readJson2(path);
     } catch (error2) {
       if (error2?.code === "ENOENT") throw new MapNotFoundError(normalizedId, normalizedRevision);
       throw error2;
@@ -22125,7 +22225,7 @@ var MapRepository = class {
   }
   async _readLockOwner(lockPath) {
     try {
-      return await readJson(join(lockPath, "owner.json"));
+      return await readJson2(join(lockPath, "owner.json"));
     } catch (error2) {
       if (error2?.code === "ENOENT" || error2 instanceof SyntaxError) return null;
       throw error2;
@@ -22328,7 +22428,8 @@ var MapRepository = class {
 };
 
 // mcp/server.mjs
-var VERSION = "0.2.1";
+var WORKBUDDY_BROWSER = process.env.SHENDUMAO_HOST === "workbuddy";
+var VERSION = WORKBUDDY_BROWSER ? "0.3.0" : "0.2.1";
 var UI_URI = "ui://shendumao/context-map-v1.html";
 var EVIDENCE_KINDS2 = ["user-stated", "assistant-reported", "summary", "inference", "manual"];
 var sourceRefSchema = external_exports.object({
@@ -22662,6 +22763,25 @@ var widgetTemplate = readFileSync(new URL("../assets/context-map-widget.html", i
 var safeDemoJson = JSON.stringify({ ...recordSummary(demoRecord), kind: "map", map: demoMap, sourceCheckpoint: null }).replaceAll("<", "\\u003c");
 var widgetHtml = widgetTemplate.replace("/*__SHENDUMAO_DEMO__*/ null", safeDemoJson);
 var repository = new MapRepository();
+var browserView = WORKBUDDY_BROWSER ? createBrowserView({
+  widgetTemplate,
+  loadResult: async (mapId, revision) => {
+    if (mapId === "demo") return modelResult(demoRecord, { includeMap: true });
+    return getContextMap({ mapId, revision });
+  },
+  invokeTool: async (name, args) => {
+    if (name === "get_context_map") return getContextMap(external_exports.object({ mapId: external_exports.string().trim().min(1), revision: external_exports.number().int().positive().optional() }).parse(args));
+    if (name === "update_context_map") return updateContextMap(external_exports.object({
+      mapId: external_exports.string().trim().min(1),
+      expectedRevision: external_exports.number().int().positive(),
+      mutationId: external_exports.string().trim().min(1).max(256),
+      operations: external_exports.array(operationSchema).min(1).max(100),
+      sourceCheckpoint: sourceCheckpointSchema.optional(),
+      change: changeSchema
+    }).parse(args));
+    throw new Error("Unsupported browser operation");
+  }
+}) : null;
 var server = new McpServer(
   { name: "shendumao-context-map", version: VERSION },
   {
@@ -22713,6 +22833,40 @@ server.registerTool(
     }
   }
 );
+async function updateContextMap({ mapId, expectedRevision, mutationId, operations, sourceCheckpoint, change }) {
+  try {
+    const requestHash = hashRequest({ mapId, expectedRevision, operations, sourceCheckpoint, change });
+    const priorResult = await recordedMutation(mapId, mutationId, requestHash);
+    if (priorResult) return modelResult(priorResult, { includeMap: true, withWidgetData: true, status: "saved" });
+    const current = await repository.get(mapId);
+    const updatedMap = normalizedMapSchema.parse(applyMapOperations(current.map, operations));
+    const record2 = await repository.update(mapId, updatedMap, {
+      expectedRevision,
+      mutationId,
+      requestHash,
+      change,
+      ...sourceCheckpoint !== void 0 ? { sourceCheckpoint } : {}
+    });
+    return modelResult(record2, { includeMap: true, withWidgetData: true, status: "saved" });
+  } catch (error2) {
+    if (error2 instanceof RevisionConflictError) {
+      try {
+        const current = await repository.get(mapId);
+        const result = modelResult(current, { includeMap: true, withWidgetData: true, status: "conflict" });
+        result.structuredContent.expectedRevision = expectedRevision;
+        result.content[0].text = `${error2.message}\uFF08mapId=${mapId}\uFF0C\u5F53\u524D revision=${current.revision}\uFF09`;
+        return result;
+      } catch (readError) {
+        return errorResult(readError);
+      }
+    }
+    if (error2 instanceof MapOperationError) {
+      return errorResult(new Error(`\u7B2C ${error2.operationIndex + 1} \u4E2A\u66F4\u65B0\u64CD\u4F5C\u65E0\u6548\uFF08${error2.code}\uFF09\uFF1A${error2.message}`));
+    }
+    if (error2 instanceof IdempotencyKeyReuseError) return errorResult(error2);
+    return errorResult(error2);
+  }
+}
 server.registerTool(
   "update_context_map",
   {
@@ -22735,41 +22889,16 @@ server.registerTool(
       "openai/toolInvocation/invoked": "\u8109\u7EDC\u66F4\u65B0\u5DF2\u4FDD\u5B58\u3002"
     }
   },
-  async ({ mapId, expectedRevision, mutationId, operations, sourceCheckpoint, change }) => {
-    try {
-      const requestHash = hashRequest({ mapId, expectedRevision, operations, sourceCheckpoint, change });
-      const priorResult = await recordedMutation(mapId, mutationId, requestHash);
-      if (priorResult) return modelResult(priorResult, { includeMap: true, withWidgetData: true, status: "saved" });
-      const current = await repository.get(mapId);
-      const updatedMap = normalizedMapSchema.parse(applyMapOperations(current.map, operations));
-      const record2 = await repository.update(mapId, updatedMap, {
-        expectedRevision,
-        mutationId,
-        requestHash,
-        change,
-        ...sourceCheckpoint !== void 0 ? { sourceCheckpoint } : {}
-      });
-      return modelResult(record2, { includeMap: true, withWidgetData: true, status: "saved" });
-    } catch (error2) {
-      if (error2 instanceof RevisionConflictError) {
-        try {
-          const current = await repository.get(mapId);
-          const result = modelResult(current, { includeMap: true, withWidgetData: true, status: "conflict" });
-          result.structuredContent.expectedRevision = expectedRevision;
-          result.content[0].text = `${error2.message}\uFF08mapId=${mapId}\uFF0C\u5F53\u524D revision=${current.revision}\uFF09`;
-          return result;
-        } catch (readError) {
-          return errorResult(readError);
-        }
-      }
-      if (error2 instanceof MapOperationError) {
-        return errorResult(new Error(`\u7B2C ${error2.operationIndex + 1} \u4E2A\u66F4\u65B0\u64CD\u4F5C\u65E0\u6548\uFF08${error2.code}\uFF09\uFF1A${error2.message}`));
-      }
-      if (error2 instanceof IdempotencyKeyReuseError) return errorResult(error2);
-      return errorResult(error2);
-    }
-  }
+  updateContextMap
 );
+async function getContextMap({ mapId, revision }) {
+  try {
+    const record2 = await repository.get(mapId, revision);
+    return modelResult(record2, { includeMap: true });
+  } catch (error2) {
+    return errorResult(error2);
+  }
+}
 server.registerTool(
   "get_context_map",
   {
@@ -22780,14 +22909,7 @@ server.registerTool(
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true }
   },
-  async ({ mapId, revision }) => {
-    try {
-      const record2 = await repository.get(mapId, revision);
-      return modelResult(record2, { includeMap: true });
-    } catch (error2) {
-      return errorResult(error2);
-    }
-  }
+  getContextMap
 );
 server.registerTool(
   "list_context_maps",
@@ -22860,10 +22982,15 @@ server.registerTool(
     }
   },
   async ({ mapId = "demo", revision }) => {
-    if (mapId === "demo") return modelResult(demoRecord, { includeMap: true, withUi: true });
     try {
-      const record2 = await repository.get(mapId, revision);
-      return modelResult(record2, { includeMap: true, withUi: true });
+      const record2 = mapId === "demo" ? demoRecord : await repository.get(mapId, revision);
+      const result = modelResult(record2, { includeMap: true, withUi: true });
+      if (!WORKBUDDY_BROWSER) return result;
+      const opened = await browserView.open(mapId, revision);
+      result.content[0].text += opened.launched ? `
+\u5DF2\u8BF7\u6C42\u5728\u9ED8\u8BA4\u6D4F\u89C8\u5668\u6253\u5F00\u672C\u673A\u5730\u56FE\uFF1A${opened.url}` : `
+\u8BF7\u6253\u5F00\u672C\u673A\u5730\u56FE\uFF1A${opened.url}\uFF08\u81EA\u52A8\u6253\u5F00\u5931\u8D25\uFF1A${opened.reason}\uFF09`;
+      return result;
     } catch (error2) {
       return errorResult(error2, { withUi: true });
     }

@@ -6,7 +6,6 @@ const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const source = resolve(root, "plugins/shendumao-context-map");
 const target = resolve(root, "plugins/shendumao-context-map-workbuddy");
 const files = [
-  "mcp/server.bundle.mjs",
   "assets/context-map-widget.html",
   "assets/demo-map.json",
   "LICENSE",
@@ -26,13 +25,16 @@ for (const relativePath of files) {
     copyFileSync(sourcePath, targetPath);
   }
 }
+if (!existsSync(resolve(target, "mcp/server.bundle.mjs"))) {
+  throw new Error("WorkBuddy 独立浏览器服务尚未构建；请先运行 npm run build。");
+}
 
 const codexManifest = JSON.parse(readFileSync(resolve(source, ".codex-plugin/plugin.json"), "utf8"));
 const workbuddyManifest = JSON.parse(readFileSync(resolve(target, ".codebuddy-plugin/plugin.json"), "utf8"));
 const marketplace = JSON.parse(readFileSync(resolve(root, ".codebuddy-plugin/marketplace.json"), "utf8"));
 const mcp = JSON.parse(readFileSync(resolve(target, ".mcp.json"), "utf8"));
-if (codexManifest.version !== workbuddyManifest.version || workbuddyManifest.version !== marketplace.plugins[0]?.version) {
-  throw new Error("Codex、WorkBuddy 与 marketplace 的插件版本不一致。");
+if (!codexManifest.version || workbuddyManifest.version !== marketplace.plugins[0]?.version) {
+  throw new Error("Codex 或 WorkBuddy 插件版本缺失，或 WorkBuddy marketplace 版本不一致。");
 }
 if (marketplace.plugins[0]?.name !== workbuddyManifest.name || marketplace.plugins[0]?.source !== "./plugins/shendumao-context-map-workbuddy") {
   throw new Error("WorkBuddy marketplace 没有指向本仓库内的插件目录。");
@@ -44,4 +46,4 @@ const server = mcp.mcpServers?.shendumaoContextMap;
 if (server?.type !== "stdio" || server.command !== "node" || server.args?.[0] !== "${CODEBUDDY_PLUGIN_ROOT}/mcp/server.bundle.mjs" || server.cwd !== "${CODEBUDDY_PLUGIN_ROOT}") {
   throw new Error("WorkBuddy 本地 MCP 启动配置不正确。");
 }
-console.log(check ? "WorkBuddy 插件文件与主版本一致。" : "已同步 WorkBuddy 插件运行文件。");
+console.log(check ? "WorkBuddy 共享资源与独立运行包检查通过。" : "已同步 WorkBuddy 插件共享资源。");

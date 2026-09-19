@@ -28,7 +28,7 @@ async function withClient(dataRoot, run) {
     command: process.execPath,
     args: [serverPath],
     cwd: pluginRoot,
-    env: { ...process.env, SHENDUMAO_DATA_DIR: dataRoot },
+    env: { ...process.env, SHENDUMAO_DATA_DIR: dataRoot, SHENDUMAO_DISABLE_AUTO_OPEN: "1" },
     stderr: "pipe",
   });
   const client = new Client({ name: "shendumao-smoke-test", version: "0.2.0" });
@@ -39,6 +39,45 @@ async function withClient(dataRoot, run) {
     await client.close();
   }
 }
+
+test("WorkBuddy 版通过本机浏览器提供地图与受保护的编辑接口", { skip: !process.env.SHENDUMAO_PLUGIN_ROOT }, async () => {
+  await withTemporaryData(async (dataRoot) => withClient(dataRoot, async (client) => {
+    const created = await client.callTool({ name: "prepare_context_map", arguments: {
+      mutationId: "browser-create",
+      map: { title: "浏览器测试", origin: "从想法开始", topics: [{ title: "路径", nodes: [{ title: "第一步" }] }] },
+    } });
+    const mapId = created.structuredContent.mapId;
+    const opened = await client.callTool({ name: "render_context_map", arguments: { mapId } });
+    const url = opened.content[0].text.match(/http:\/\/127\.0\.0\.1:\d+\/view\?[^\s（]+/)?.[0];
+    assert.ok(url, opened.content[0].text);
+    const page = await fetch(url);
+    assert.equal(page.status, 200);
+    const html = await page.text();
+    assert.match(html, /浏览器测试/);
+    assert.match(html, /window\.openai/);
+    const parsed = new URL(url);
+    const rejected = await fetch(`${parsed.origin}/view?mapId=${mapId}`);
+    assert.equal(rejected.status, 403);
+    const csrf = await fetch(`${parsed.origin}/api/call`, { method: "POST", headers: { "Content-Type": "application/json", Origin: parsed.origin }, body: JSON.stringify({ name: "get_context_map", args: { mapId } }) });
+    assert.equal(csrf.status, 403);
+    const headers = { "Content-Type": "application/json", "X-Shendumao-Token": parsed.searchParams.get("token"), Origin: parsed.origin };
+    const read = await fetch(`${parsed.origin}/api/call`, { method: "POST", headers, body: JSON.stringify({ name: "get_context_map", args: { mapId } }) });
+    assert.equal(read.status, 200);
+    const current = await read.json();
+    const nodeId = current.structuredContent.map.topics[0].nodes[0].id;
+    const saved = await fetch(`${parsed.origin}/api/call`, { method: "POST", headers, body: JSON.stringify({ name: "update_context_map", args: {
+      mapId, expectedRevision: 1, mutationId: "browser-edit", operations: [{ type: "update_node", nodeId, patch: { title: "第二步" } }], change: { kind: "manual", summary: "浏览器编辑" },
+    } }) });
+    assert.equal(saved.status, 200);
+    const updated = await saved.json();
+    assert.equal(updated.structuredContent.revision, 2);
+    assert.equal(updated.structuredContent.map.topics[0].nodes[0].title, "第二步");
+    const history = await client.callTool({ name: "render_context_map", arguments: { mapId, revision: 1 } });
+    const historyUrl = history.content[0].text.match(/http:\/\/127\.0\.0\.1:\d+\/view\?[^\s（]+/)?.[0];
+    const historyHtml = await (await fetch(historyUrl)).text();
+    assert.match(historyHtml, /SHENDUMAO_HISTORY_READ_ONLY=true/);
+  }));
+});
 
 test("MCP 服务公开持久化、版本与编辑工具，并返回自包含 UI resource", async () => {
   await withTemporaryData(async (dataRoot) => withClient(dataRoot, async (client) => {

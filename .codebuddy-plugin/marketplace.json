@@ -1,6 +1,6 @@
 {
   "name": "shendumao-workbuddy",
-  "description": "神都猫脉络的 WorkBuddy 试用插件市场",
+  "description": "神都猫脉络的 WorkBuddy 插件市场",
   "owner": {
     "name": "神都猫"
   },
@@ -8,8 +8,8 @@
     {
       "name": "shendumao-context-map",
       "source": "./plugins/shendumao-context-map-workbuddy",
-      "description": "把对话和规划整理为可回看的本地思路地图（WorkBuddy 适配试用版）",
-      "version": "0.2.1",
+      "description": "把对话和规划整理为可回看的本地思路地图，在本机浏览器中查看和编辑",
+      "version": "0.3.0",
       "author": {
         "name": "神都猫"
       },

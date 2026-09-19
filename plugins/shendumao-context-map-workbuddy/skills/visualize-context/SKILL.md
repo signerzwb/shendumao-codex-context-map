@@ -14,8 +14,8 @@ description: 把当前 WorkBuddy 对话、宿主实际授权读取的其他任�
 3. 提炼一个总起点和若干主题。主题按“正在解决什么问题”分组，不按消息轮次机械切分；同一对话可以有多个顶层主题。
 4. 新图调用 `prepare_context_map` 持久保存；已有图调用 `update_context_map` 原子应用语义操作。每次逻辑写入使用新的 `mutationId`，只有对完全相同请求的重试才复用原 `mutationId`。更新必须把刚读取到的 `revision` 作为 `expectedRevision`，并写清 `change.kind` 与 `change.summary`。
 5. 更新发生版本冲突时，重新调用 `get_context_map` 读取最新版，核对差异后重建操作；不要提高 `expectedRevision` 后盲目覆盖。需要标记来源处理进度时，只根据真实读取结果填写 `sourceCheckpoint`。
-6. 展示最新版时调用 `render_context_map`。回看演变过程时，先用 `list_context_map_revisions` 查看修改原因，再用带 `revision` 的 `get_context_map` 或 `render_context_map` 打开指定历史版本；历史版本用于回看，不直接覆盖。
-7. 文字结果中同时给出最重要的目标、转折和未完成事项。若当前 WorkBuddy 界面没有渲染 MCP Apps 画布，明确报告宿主限制，仍可用工具读取结构化地图，不要声称图形已显示。
+6. 展示最新版时调用 `render_context_map`。该工具会启动仅监听本机的页面，并尝试自动在默认浏览器打开；若系统拦截自动打开，把工具返回的本机 URL 作为可点击链接交给用户。回看演变过程时，先用 `list_context_map_revisions` 查看修改原因，再用带 `revision` 的 `get_context_map` 或 `render_context_map` 打开指定历史版本；历史版本用于回看，不直接覆盖。
+7. 文字结果中同时给出最重要的目标、转折和未完成事项。不要仅凭工具返回 URL 就声称浏览器已经显示；无法自动打开时如实说明，并提供该 URL。
 
 ## 证据与来源
 

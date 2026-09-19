@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { createBrowserView } from "./browser-view.mjs";
 import { applyMapOperations, MapOperationError } from "./operations.mjs";
 import {
   IdempotencyKeyReuseError,
@@ -10,7 +11,8 @@ import {
   RevisionConflictError,
 } from "./storage.mjs";
 
-const VERSION = "0.2.1";
+const WORKBUDDY_BROWSER = process.env.SHENDUMAO_HOST === "workbuddy";
+const VERSION = WORKBUDDY_BROWSER ? "0.3.0" : "0.2.1";
 const UI_URI = "ui://shendumao/context-map-v1.html";
 const EVIDENCE_KINDS = ["user-stated", "assistant-reported", "summary", "inference", "manual"];
 
@@ -382,6 +384,25 @@ const safeDemoJson = JSON.stringify({ ...recordSummary(demoRecord), kind: "map",
   .replaceAll("<", "\\u003c");
 const widgetHtml = widgetTemplate.replace("/*__SHENDUMAO_DEMO__*/ null", safeDemoJson);
 const repository = new MapRepository();
+const browserView = WORKBUDDY_BROWSER ? createBrowserView({
+  widgetTemplate,
+  loadResult: async (mapId, revision) => {
+    if (mapId === "demo") return modelResult(demoRecord, { includeMap: true });
+    return getContextMap({ mapId, revision });
+  },
+  invokeTool: async (name, args) => {
+    if (name === "get_context_map") return getContextMap(z.object({ mapId: z.string().trim().min(1), revision: z.number().int().positive().optional() }).parse(args));
+    if (name === "update_context_map") return updateContextMap(z.object({
+      mapId: z.string().trim().min(1),
+      expectedRevision: z.number().int().positive(),
+      mutationId: z.string().trim().min(1).max(256),
+      operations: z.array(operationSchema).min(1).max(100),
+      sourceCheckpoint: sourceCheckpointSchema.optional(),
+      change: changeSchema,
+    }).parse(args));
+    throw new Error("Unsupported browser operation");
+  },
+}) : null;
 
 const server = new McpServer(
   { name: "shendumao-context-map", version: VERSION },
@@ -437,6 +458,41 @@ server.registerTool(
   },
 );
 
+async function updateContextMap({ mapId, expectedRevision, mutationId, operations, sourceCheckpoint, change }) {
+  try {
+    const requestHash = hashRequest({ mapId, expectedRevision, operations, sourceCheckpoint, change });
+    const priorResult = await recordedMutation(mapId, mutationId, requestHash);
+    if (priorResult) return modelResult(priorResult, { includeMap: true, withWidgetData: true, status: "saved" });
+    const current = await repository.get(mapId);
+    const updatedMap = normalizedMapSchema.parse(applyMapOperations(current.map, operations));
+    const record = await repository.update(mapId, updatedMap, {
+      expectedRevision,
+      mutationId,
+      requestHash,
+      change,
+      ...(sourceCheckpoint !== undefined ? { sourceCheckpoint } : {}),
+    });
+    return modelResult(record, { includeMap: true, withWidgetData: true, status: "saved" });
+  } catch (error) {
+    if (error instanceof RevisionConflictError) {
+      try {
+        const current = await repository.get(mapId);
+        const result = modelResult(current, { includeMap: true, withWidgetData: true, status: "conflict" });
+        result.structuredContent.expectedRevision = expectedRevision;
+        result.content[0].text = `${error.message}（mapId=${mapId}，当前 revision=${current.revision}）`;
+        return result;
+      } catch (readError) {
+        return errorResult(readError);
+      }
+    }
+    if (error instanceof MapOperationError) {
+      return errorResult(new Error(`第 ${error.operationIndex + 1} 个更新操作无效（${error.code}）：${error.message}`));
+    }
+    if (error instanceof IdempotencyKeyReuseError) return errorResult(error);
+    return errorResult(error);
+  }
+}
+
 server.registerTool(
   "update_context_map",
   {
@@ -459,41 +515,17 @@ server.registerTool(
       "openai/toolInvocation/invoked": "脉络更新已保存。",
     },
   },
-  async ({ mapId, expectedRevision, mutationId, operations, sourceCheckpoint, change }) => {
-    try {
-      const requestHash = hashRequest({ mapId, expectedRevision, operations, sourceCheckpoint, change });
-      const priorResult = await recordedMutation(mapId, mutationId, requestHash);
-      if (priorResult) return modelResult(priorResult, { includeMap: true, withWidgetData: true, status: "saved" });
-      const current = await repository.get(mapId);
-      const updatedMap = normalizedMapSchema.parse(applyMapOperations(current.map, operations));
-      const record = await repository.update(mapId, updatedMap, {
-        expectedRevision,
-        mutationId,
-        requestHash,
-        change,
-        ...(sourceCheckpoint !== undefined ? { sourceCheckpoint } : {}),
-      });
-      return modelResult(record, { includeMap: true, withWidgetData: true, status: "saved" });
-    } catch (error) {
-      if (error instanceof RevisionConflictError) {
-        try {
-          const current = await repository.get(mapId);
-          const result = modelResult(current, { includeMap: true, withWidgetData: true, status: "conflict" });
-          result.structuredContent.expectedRevision = expectedRevision;
-          result.content[0].text = `${error.message}（mapId=${mapId}，当前 revision=${current.revision}）`;
-          return result;
-        } catch (readError) {
-          return errorResult(readError);
-        }
-      }
-      if (error instanceof MapOperationError) {
-        return errorResult(new Error(`第 ${error.operationIndex + 1} 个更新操作无效（${error.code}）：${error.message}`));
-      }
-      if (error instanceof IdempotencyKeyReuseError) return errorResult(error);
-      return errorResult(error);
-    }
-  },
+  updateContextMap,
 );
+
+async function getContextMap({ mapId, revision }) {
+  try {
+    const record = await repository.get(mapId, revision);
+    return modelResult(record, { includeMap: true });
+  } catch (error) {
+    return errorResult(error);
+  }
+}
 
 server.registerTool(
   "get_context_map",
@@ -505,14 +537,7 @@ server.registerTool(
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   },
-  async ({ mapId, revision }) => {
-    try {
-      const record = await repository.get(mapId, revision);
-      return modelResult(record, { includeMap: true });
-    } catch (error) {
-      return errorResult(error);
-    }
-  },
+  getContextMap,
 );
 
 server.registerTool(
@@ -588,10 +613,15 @@ server.registerTool(
     },
   },
   async ({ mapId = "demo", revision }) => {
-    if (mapId === "demo") return modelResult(demoRecord, { includeMap: true, withUi: true });
     try {
-      const record = await repository.get(mapId, revision);
-      return modelResult(record, { includeMap: true, withUi: true });
+      const record = mapId === "demo" ? demoRecord : await repository.get(mapId, revision);
+      const result = modelResult(record, { includeMap: true, withUi: true });
+      if (!WORKBUDDY_BROWSER) return result;
+      const opened = await browserView.open(mapId, revision);
+      result.content[0].text += opened.launched
+        ? `\n已请求在默认浏览器打开本机地图：${opened.url}`
+        : `\n请打开本机地图：${opened.url}（自动打开失败：${opened.reason}）`;
+      return result;
     } catch (error) {
       return errorResult(error, { withUi: true });
     }

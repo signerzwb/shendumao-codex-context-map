@@ -91,10 +91,13 @@
   };
   messages.zh.missingMap = "已收到工具结果，但其中没有可显示的地图数据（缺少 map）。";
   messages.en.missingMap = "A tool result arrived without displayable map data (missing map).";
+  messages.zh.historyReadOnly = "历史版本只供回看；请打开最新版再编辑。";
+  messages.en.historyReadOnly = "Historical revisions are read-only. Open the latest version to edit.";
   const $ = (id) => document.getElementById(id);
   function readViewState(){try{return window.openai?.widgetState?.shendumaoContextMap||JSON.parse(sessionStorage.getItem("shendumao-context-map-view")||"{}")||{}}catch{return {}}}
   const savedView=readViewState(),hostLocale=window.openai?.locale||document.documentElement.lang||"";
   const state = { payload:null, direction:savedView.direction==="horizontal"?"horizontal":"vertical", theme:["light","dark","ocean","paper"].includes(savedView.theme)?savedView.theme:"light", language:savedView.language==="en"||(!savedView.language&&hostLocale.toLowerCase().startsWith("en"))?"en":"zh", selected:null, editorMode:null, contextNodeId:null, deleteNodeId:null, saving:false, camera:{x:0,y:0,scale:1}, size:{width:900,height:650}, userCamera:false };
+  const historyReadOnly = window.SHENDUMAO_HISTORY_READ_ONLY === true;
   let displayMode=window.openai?.displayMode||"inline",bridgeConnected=false,bridgeFailure="",rpcId=0;
   const pendingRequests=new Map();
   let toastTimer = 0;
@@ -137,7 +140,7 @@
     $("add-node").textContent=t("addNode"); $("node-dialog-title").textContent=t(state.editorMode==="add"?"addTitle":"editTitle"); $("node-dialog-help").textContent=t("editorHelp"); $("node-cancel").textContent=t("cancel"); $("node-submit").textContent=t("save"); $("delete-dialog-title").textContent=t("deleteTitle"); $("delete-dialog-help").textContent=t("deleteHelp"); $("delete-cancel").textContent=t("cancel"); $("delete-submit").textContent=t("deleteAction");
     const menuLabels={edit:"edit",add:"addAfter",delete:"remove"};$("context-menu").querySelectorAll("[data-menu-action]").forEach(button=>button.textContent=t(menuLabels[button.dataset.menuAction]));
     if(state.payload){ const stats={...state.payload.stats,revision:state.payload.revision}; $("stats").textContent=t("topics",stats); $("map-title").textContent=state.payload.map.title; }
-    $("add-node").disabled=!state.selected||state.payload?.mapId==="demo";
+    $("add-node").disabled=!state.selected||state.payload?.mapId==="demo"||historyReadOnly;
     if(state.selected) renderInspector(state.selected);
   }
   function makeCard(item, type, lane, box) {
@@ -195,14 +198,14 @@
   }
   function field(label,value,quote=false){if(!value)return null;const wrap=el("section","field"),heading=el("label","",label),body=el(quote?"blockquote":"p","",value);wrap.append(heading,body);return wrap;}
   function renderInspector(item){
-    $("add-node").disabled=state.payload?.mapId==="demo";const panel=$("inspector");panel.replaceChildren();const head=el("div","inspector-head");head.append(el("span","kind",clean(item.kind,"节点")),el("span","date",[item.speaker,item.date].filter(Boolean).join(" · ")));const close=el("button","","×");close.type="button";close.setAttribute("aria-label",t("close"));close.onclick=()=>{state.selected=null;$("add-node").disabled=true;panel.hidden=true;draw();};head.append(close);panel.append(head,el("h2","",item.title));[field(t("summary"),item.summary),field(t("why"),item.why),field(t("change"),item.change),field(t("source"),item.quote,true)].filter(Boolean).forEach(node=>panel.append(node));const actions=el("div","inspector-actions"),edit=el("button","",t("edit")),add=el("button","",t("addAfter")),remove=el("button","danger",t("remove"));[edit,add,remove].forEach(button=>button.type="button");edit.onclick=()=>openNodeEditor("edit",item.id);add.onclick=()=>openNodeEditor("add",item.id);remove.onclick=()=>openDeleteDialog(item.id);actions.append(edit,add,remove);panel.append(actions);panel.hidden=false;
+    $("add-node").disabled=state.payload?.mapId==="demo"||historyReadOnly;const panel=$("inspector");panel.replaceChildren();const head=el("div","inspector-head");head.append(el("span","kind",clean(item.kind,"节点")),el("span","date",[item.speaker,item.date].filter(Boolean).join(" · ")));const close=el("button","","×");close.type="button";close.setAttribute("aria-label",t("close"));close.onclick=()=>{state.selected=null;$("add-node").disabled=true;panel.hidden=true;draw();};head.append(close);panel.append(head,el("h2","",item.title));[field(t("summary"),item.summary),field(t("why"),item.why),field(t("change"),item.change),field(t("source"),item.quote,true)].filter(Boolean).forEach(node=>panel.append(node));if(state.payload?.mapId!=="demo"&&!historyReadOnly){const actions=el("div","inspector-actions"),edit=el("button","",t("edit")),add=el("button","",t("addAfter")),remove=el("button","danger",t("remove"));[edit,add,remove].forEach(button=>button.type="button");edit.onclick=()=>openNodeEditor("edit",item.id);add.onclick=()=>openNodeEditor("add",item.id);remove.onclick=()=>openDeleteDialog(item.id);actions.append(edit,add,remove);panel.append(actions)}panel.hidden=false;
   }
   function applyCamera(){const world=$("world");world.style.transform=`translate(${state.camera.x}px,${state.camera.y}px) scale(${state.camera.scale})`;world.classList.toggle("distant",state.camera.scale<.65);$("zoom-label").textContent=Math.round(state.camera.scale*100)+"%";}
   function zoom(next,x,y){const viewport=$("viewport");x??=viewport.clientWidth/2;y??=viewport.clientHeight/2;next=Math.max(.18,Math.min(2,next));const ratio=next/state.camera.scale;state.camera.x=x-(x-state.camera.x)*ratio;state.camera.y=y-(y-state.camera.y)*ratio;state.camera.scale=next;state.userCamera=true;applyCamera();}
   function fit(){const viewport=$("viewport"),natural=Math.min((viewport.clientWidth-36)/state.size.width,(viewport.clientHeight-36)/state.size.height,1);state.camera.scale=Math.max(.18,natural);state.camera.x=Math.max(18,(viewport.clientWidth-state.size.width*state.camera.scale)/2);state.camera.y=Math.max(18,(viewport.clientHeight-state.size.height*state.camera.scale)/2);state.userCamera=false;applyCamera();}
   function notify(message){$("toast").textContent=message;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").textContent="",3200);}
   function setSaveState(key="",className=""){const target=$("save-state");target.textContent=key?t(key):"";target.className=`save-state ${className}`.trim()}
-  function editable(){if(!state.payload||state.payload.mapId==="demo"||state.payload.revision<1){notify(t("demoReadOnly"));return false}return true}
+  function editable(){if(historyReadOnly){notify(t("historyReadOnly"));return false}if(!state.payload||state.payload.mapId==="demo"||state.payload.revision<1){notify(t("demoReadOnly"));return false}return true}
   function findNode(nodeId){for(const topic of state.payload?.map?.topics||[]){const index=(topic.nodes||[]).findIndex(item=>item.id===nodeId);if(index>=0)return {topic,node:topic.nodes[index],index}}return null}
   function makeMutationId(){return globalThis.crypto?.randomUUID?.()||`ui-${Date.now()}-${Math.random().toString(16).slice(2)}`}
   function today(){const date=new Date(),pad=value=>String(value).padStart(2,"0");return `${String(date.getFullYear()).slice(-2)}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`}
